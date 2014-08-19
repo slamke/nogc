@@ -1,6 +1,9 @@
 *.cache 
 *~
 *.classes
+*.project
+*.classpath
 
 build/
 bin/
+.settings/
