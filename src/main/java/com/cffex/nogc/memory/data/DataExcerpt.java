@@ -18,7 +18,7 @@ public class DataExcerpt implements DataOperateable{
 		
 	}
 	
-	DataExcerpt(SegmentExcerpt se){
+	public DataExcerpt(SegmentExcerpt se){
 		this.segmentExcerpt = se;
 	}
 	//private methods to implement functions in DataOperateable

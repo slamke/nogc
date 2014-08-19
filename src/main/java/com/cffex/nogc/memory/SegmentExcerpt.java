@@ -2,6 +2,10 @@ package com.cffex.nogc.memory;
 
 import com.cffex.nogc.enumeration.IsolationType;
 import com.cffex.nogc.memory.SegmentOperateable;
+import com.cffex.nogc.memory.buffer.BufferExcerpt;
+import com.cffex.nogc.memory.buffer.BufferOperatable;
+import com.cffex.nogc.memory.data.DataExcerpt;
+import com.cffex.nogc.memory.data.DataOperateable;
 
 /**
  * SegmentExcerpt
@@ -19,6 +23,11 @@ public class SegmentExcerpt implements SegmentOperateable {
 	 */
 	private Segment Segment;
 
+	
+	private BufferOperatable bufferOperatable;
+	
+	private DataOperateable dataOperateable;
+	
 	/**
 	 * @param isolationType 隔离级别 
 	 * @param segment 段数据
@@ -28,6 +37,9 @@ public class SegmentExcerpt implements SegmentOperateable {
 		super();
 		this.isolationType = isolationType;
 		Segment = segment;
+		
+		this.dataOperateable = new DataExcerpt(this);
+		this.bufferOperatable = new BufferExcerpt(this);
 	}
 
 	/* (non-Javadoc)
