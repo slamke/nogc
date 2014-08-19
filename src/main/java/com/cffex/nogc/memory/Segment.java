@@ -1,4 +1,7 @@
 package com.cffex.nogc.memory;
+
+import java.nio.ByteBuffer;
+
 /**
  * @author sunke
  * @ClassName SegmentExcerpt
@@ -15,4 +18,9 @@ public class Segment {
 	 */
 	public final static float DEFAULT_REACTOR = 1.2f;
 	
+	
+	private int capacity;
+	private ByteBuffer address;
+	private BufferOperatable bufferOperatable;
+	private DataOperateable dataOperateable;
 }
