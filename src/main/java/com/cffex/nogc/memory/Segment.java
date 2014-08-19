@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 
 import sun.nio.ch.DirectBuffer;
 
+import com.cffex.nogc.memory.buffer.BufferExcerpt;
 import com.cffex.nogc.memory.buffer.BufferOperatable;
 import com.cffex.nogc.memory.data.DataExcerpt;
 import com.cffex.nogc.memory.data.DataOperateable;
@@ -27,15 +28,11 @@ public class Segment {
 	
 	private int capacity;
 	private ByteBuffer address;
-	private BufferOperatable bufferExcerpt;
-	private DataOperateable dataExcerpt;
 	
-	Segment(){
+	public Segment(){
 		super();
-		address = ByteBuffer.allocateDirect(this.DEFAULT_CAPACITY);
-		this.capacity = this.DEFAULT_CAPACITY;
-		this.dataExcerpt = new DataExcerpt();
-		
+		address = ByteBuffer.allocateDirect(DEFAULT_CAPACITY);
+		this.capacity = DEFAULT_CAPACITY;
 		//print something
 		int temp_adderss = (int) ((DirectBuffer) address).address();
 		System.out.println(temp_adderss);
