@@ -2,6 +2,8 @@ package com.cffex.nogc.memory;
 
 import java.nio.ByteBuffer;
 
+import com.cffex.nogc.memory.buffer.BufferOperatable;
+
 /**
  * @author sunke
  * @ClassName SegmentExcerpt

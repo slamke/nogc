@@ -1,5 +1,6 @@
 package com.cffex.nogc.memory;
 
+import com.cffex.nogc.enumeration.IsolationType;
 import com.cffex.nogc.memory.SegmentOperateable;
 
 /**
@@ -9,6 +10,25 @@ import com.cffex.nogc.memory.SegmentOperateable;
  * @Description: SegmentExcerpt实现了SegmentOperateable接口，提供了段操作的真实实现
  */
 public class SegmentExcerpt implements SegmentOperateable {
+	/**
+	 * 隔离级别 
+	 */
+	private IsolationType isolationType;
+	/**
+	 * 段数据
+	 */
+	private Segment Segment;
+
+	/**
+	 * @param isolationType 隔离级别 
+	 * @param segment 段数据
+	 */
+	public SegmentExcerpt(IsolationType isolationType,
+			Segment segment) {
+		super();
+		this.isolationType = isolationType;
+		Segment = segment;
+	}
 
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.SegmentOperateable#insertItem(long, byte[])
@@ -82,4 +102,11 @@ public class SegmentExcerpt implements SegmentOperateable {
 		return false;
 	}
 
+	/**
+	 * 将buffer区获取的operation与data区中的数据进行merge
+	 * @return merge后的结果
+	 */
+	private byte[] mergeDataWithOperation(){
+		return null;
+	}
 }

@@ -1,9 +1,10 @@
-package com.cffex.nogc.memory;
+package com.cffex.nogc.memory.buffer;
 /**
+ * 
  * @author sunke
  * @ClassName SegmentExcerpt
  * @Description: TODO
  */
-public class Buffer {
+public interface BufferOperatable {
 
 }

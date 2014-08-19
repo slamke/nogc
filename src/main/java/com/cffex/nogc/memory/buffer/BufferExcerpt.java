@@ -1,4 +1,4 @@
-package com.cffex.nogc.memory;
+package com.cffex.nogc.memory.buffer;
 /**
  * 
  * @author sunke
