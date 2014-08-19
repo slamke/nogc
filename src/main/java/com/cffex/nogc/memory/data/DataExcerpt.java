@@ -7,18 +7,19 @@ package com.cffex.nogc.memory.data;
 import java.lang.reflect.Array;
 
 import com.cffex.nogc.memory.SegmentExcerpt;
+import com.cffex.nogc.memory.SegmentOperateable;
 
 public class DataExcerpt implements DataOperateable{
 
 	//private region
 	private Data data;
-	private SegmentExcerpt segmentExcerpt;
+	private SegmentOperateable segmentExcerpt;
 	
-	DataExcerpt(){
+	public DataExcerpt(){
 		
 	}
 	
-	DataExcerpt(SegmentExcerpt se){
+	public DataExcerpt(SegmentExcerpt se){
 		this.segmentExcerpt = se;
 	}
 	//private methods to implement functions in DataOperateable
