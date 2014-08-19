@@ -42,6 +42,11 @@ public class SegmentExcerpt implements SegmentOperateable {
 		this.bufferOperatable = new BufferExcerpt(this);
 	}
 
+	public int getCapacity(){
+		return this.Segment.getCapactiy();
+	}
+	
+	
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.SegmentOperateable#insertItem(long, byte[])
 	 */
