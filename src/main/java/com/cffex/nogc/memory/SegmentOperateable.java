@@ -5,6 +5,6 @@ package com.cffex.nogc.memory;
  * @ClassName SegmentExcerpt
  * @Description: TODO
  */
-public class BufferExcerpt {
+public interface SegmentOperateable {
 
 }
