@@ -44,7 +44,7 @@ public class MemoryTool {
 	 * @param position
 	 * @return
 	 */
-	public int getInt(int position) {
+	public int getInt(long position) {
 		// TODO Auto-generated method stub
 		return this.UNSAFE.getInt(position);
 	}
@@ -52,7 +52,7 @@ public class MemoryTool {
 	 * @param position
 	 * @return
 	 */
-	public byte getByte(int position) {
+	public byte getByte(long position) {
 		// TODO Auto-generated method stub
 		return this.UNSAFE.getByte(position);
 	}
@@ -60,7 +60,7 @@ public class MemoryTool {
 	 * @param position
 	 * @return
 	 */
-	public byte[] getBytes(int position, int length) {
+	public byte[] getBytes(long position, int length) {
 		// TODO Auto-generated method stub
 		byte[] b = new byte[length];
   		for(int i=0;i<length;i++){  
@@ -73,7 +73,7 @@ public class MemoryTool {
 	 * @param b
 	 * @param position
 	 */
-	public void writeBytes(byte[] b, int position) {
+	public void writeBytes(byte[] b, long position) {
 		// TODO Auto-generated method stub
 		this.UNSAFE.copyMemory(b, BYTES_OFFSET, null, position, b.length);
 	}
@@ -82,7 +82,7 @@ public class MemoryTool {
 	 * @param b
 	 * @param position
 	 */
-	public void copyBytes(int position0, int length, int position1) {
+	public void copyBytes(long position0, int length, long position1) {
 		// TODO Auto-generated method stub
 		byte[] b = getBytes(position0, length);
 		this.UNSAFE.copyMemory(b, BYTES_OFFSET, null, position1, b.length);
