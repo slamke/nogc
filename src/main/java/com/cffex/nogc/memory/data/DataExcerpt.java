@@ -29,12 +29,12 @@ public class DataExcerpt implements DataOperateable{
 	}
 	//private methods to implement functions in DataOperateable
 	@SuppressWarnings("unused")
-	private int writeData(byte[] b, int position){
+	private int writeData(byte[] b, long position){
 		MemoryTool mt = new MemoryTool();
 		mt.writeBytes(b,position);
 		return 1;
 	}
-	private int copyData( int position0, int length, int position1){
+	private int copyData( long position0, int length, long position1){
 		MemoryTool mt = new MemoryTool();
 		mt.copyBytes(position0, length, position1);
 		return 1;
@@ -48,7 +48,7 @@ public class DataExcerpt implements DataOperateable{
 	}
 	
 	//read int
-	private int getInt(int position){
+	private int getInt(long position){
 		MemoryTool mt = new MemoryTool();
 		int i = mt.getInt(position);
   		return i;
@@ -77,12 +77,12 @@ public class DataExcerpt implements DataOperateable{
 	 * @return offset的值
 	 */
 	private int getOffsetById(long id) {
-		int position = binarySearchById(id);
-		if(position < 0){
+		int offset = binarySearchById(id);
+		if(offset < 0){
 			return -1;
 		}else{
-			int offset = getInt(position);
-			return offset;
+			int result = getInt(offset);
+			return result;
 		}
 		
 	}
@@ -93,31 +93,25 @@ public class DataExcerpt implements DataOperateable{
 	 */
 	private int binarySearchById(long id){
 		
-		if(data.getCount() == 0){
+		if(data.getCount() == 0|| id < data.getMinId() || id > data.getMaxId()){
 			return -1;
 		}else{
-			int begin = 0;
-			int end = data.getCount()*12;//index为int+long
-			int position = binarySearch(begin, end, id);
-			return position;
+			int low = 0;   
+		        int high = data.getCount()-1; 
+		        while(low <= high) {   
+		            int middle = (low + high)/2;   
+		            int offset = Data.OFFSET+data.getCapacity()-middle*12-8;
+		            if(id == getLong(offset)) {   
+		                return offset-4;   
+		            }else if(id <getLong(offset)) {   
+		                high = middle - 1;   
+		            }else {   
+		                low = middle + 1;   
+		            }  
+		        }  
+		        return -1; 
 		}
 
-	}
-	private int binarySearch(int begin, int end, long id){
-		int position = Data.OFFSET+data.getCapacity()-(begin+end)/2-8;
-		long minId = getLong(position);
-		if(end-begin>=8){
-			if(id>minId){
-				binarySearch(begin,position+8,id);
-			}else if(id<minId){
-				binarySearch(position-4,end,id);
-			}else{
-				return position-4;
-			}
-		}else{
-			return -1;
-		}
-		return -1;
 	}
 	
 	/*
@@ -125,40 +119,40 @@ public class DataExcerpt implements DataOperateable{
 	 */
 	private int findIdOffset(long id){
 		if(data.getCount() == 0){
-			return -1;
+			return Data.OFFSET+data.getCapacity();
 		}else{
 			if(id > data.getMaxId()){
-				
+				return Data.OFFSET+data.getCapacity()-data.getCount()*12;
 			}else if(id< data.getMinId()){
-				
-			}
-			int begin = 0;
-			int end = data.getCount()*12;//index为int+long
-			int position = findIdOffset(begin, end, id);
-			return position;
-		}
-	}
-	private int findIdOffset(int begin, int end, long id){
-		int position = Data.OFFSET+data.getCapacity()-(begin+end)/2-8;
-		long minId = getLong(position);
-		if(end-begin>=8){
-			if(id>minId){
-				findIdOffset(begin,position+8,id);
-			}else if(id<minId){
-				findIdOffset(position-4,end,id);
+				return Data.OFFSET+data.getCapacity();
 			}else{
-				return position-4;
+				int low = 0;   
+			        int high = data.getCount()-1; 
+			        while(low <= high) {   
+			            int middle = (low + high)/2;   
+			            int offset = Data.OFFSET+data.getCapacity()-middle*12-8;
+			            if(id == getLong(offset)) {   
+			                return offset-4;   
+			            }else if(id <getLong(offset)) {   
+			                high = middle - 1;   
+			            }else {   
+			                low = middle + 1;   
+			            }  
+			        }  
+			        return Data.OFFSET+data.getCapacity()-low*12;  //若没有找到  
 			}
-		}else{
-			return -1;
 		}
-		return -1;
-
 	}
+
 	
 	private Object[] GetIndexRegion(long minid, long maxid){
-		
-		return null;
+		Object[] result =null;
+		int offset1 = findIdOffset(minid);
+		int offset2 = findIdOffset(maxid);
+		for(int i = 0; i < (offset2-offset1)/12; i++){
+			
+		}
+		return result;
 	}
 	private int setIndexRegion(){
 		return 0;
