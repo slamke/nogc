@@ -17,10 +17,14 @@ import sun.misc.Unsafe;
  * @Description: 堆外内存统一申请和释放工具类
  */
 public class MemoryTool {
-	public final static Unsafe UNSAFE;
-	public static long BYTES_OFFSET;
-	//allocate memory
-	static{
+	public final  Unsafe UNSAFE;
+	public long BYTES_OFFSET;
+
+	/**
+	 * 
+	 */
+	public MemoryTool(){
+		// TODO Auto-generated constructor stub
 		try {
 			@SuppressWarnings("ALL")
 			Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
@@ -31,6 +35,65 @@ public class MemoryTool {
 			throw new AssertionError(e);
 		}
 	}
+	
+	/**
+	 * @param position
+	 * @return
+	 */
+	public long getLong(long position) {
+		// TODO Auto-generated method stub
+		return this.UNSAFE.getLong(position);
+	}
+	
+	/**
+	 * @param position
+	 * @return
+	 */
+	public int getInt(int position) {
+		// TODO Auto-generated method stub
+		return this.UNSAFE.getInt(position);
+	}
+	/**
+	 * @param position
+	 * @return
+	 */
+	public byte getByte(int position) {
+		// TODO Auto-generated method stub
+		return this.UNSAFE.getByte(position);
+	}
+	/**
+	 * @param position
+	 * @return
+	 */
+	public byte[] getBytes(int position, int length) {
+		// TODO Auto-generated method stub
+		byte[] b = new byte[length];
+  		for(int i=0;i<length;i++){  
+  			b[i]=getByte(i+position);
+  		}
+		return b;
+	}
+	
+	/**
+	 * @param b
+	 * @param position
+	 */
+	public void writeBytes(byte[] b, int position) {
+		// TODO Auto-generated method stub
+		this.UNSAFE.copyMemory(b, BYTES_OFFSET, null, position, b.length);
+	}
+	
+	/**
+	 * @param b
+	 * @param position
+	 */
+	public void copyBytes(int position0, int length, int position1) {
+		// TODO Auto-generated method stub
+		byte[] b = getBytes(position0, length);
+		this.UNSAFE.copyMemory(b, BYTES_OFFSET, null, position1, b.length);
+	}
+	
+	//allocate memory
 	public static synchronized ByteBuffer allocate(int capacity) {
 		ByteBuffer byteBuffer = null;
 		byteBuffer = ByteBuffer.allocateDirect(capacity);
@@ -63,4 +126,12 @@ public class MemoryTool {
 		}
 		return false;
 	}
+
+
+
+
+
+
+
+
 }

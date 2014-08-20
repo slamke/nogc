@@ -10,7 +10,7 @@ public class Data {
 	public static final int THRESHOLD = 256;
 	
 	//segment 头部buffer 大小为128K
-	private static int OFFSET  = 128*1024;
+	public static int OFFSET  = 128*1024;
 	
 	//
 	private int freesapce;
@@ -20,6 +20,7 @@ public class Data {
 	private long minId;
 	private long maxId;
 	private int count;
+	
 	
 	protected Data(int capacity){
 		this.freesapce = capacity;
@@ -56,17 +57,25 @@ public class Data {
 	}
 
 	protected long getMinId() {
-		return minId;
+		return this.minId;
 	}
 
 	protected void setMinId(long minId) {
 		this.minId = minId;
 	}
 
+	protected long getMaxId(){
+		return this.maxId;
+	}
+	
 	protected void setMaxId(long maxId) {
 		this.maxId = maxId;
 	}
 
+	protected int getCount() {
+		return count;
+	}
+	
 	protected void setCount(int count) {
 		this.count = count;
 	}
