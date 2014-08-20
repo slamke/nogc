@@ -21,7 +21,7 @@ public class SegmentExcerpt implements SegmentOperateable {
 	/**
 	 * 段数据
 	 */
-	private Segment Segment;
+	private Segment segment;
 
 	
 	private BufferOperatable bufferOperatable;
@@ -36,7 +36,7 @@ public class SegmentExcerpt implements SegmentOperateable {
 			Segment segment) {
 		super();
 		this.isolationType = isolationType;
-		Segment = segment;
+		segment = segment;
 		
 		this.dataOperateable = new DataExcerpt(this);
 		this.bufferOperatable = new BufferExcerpt(this);
@@ -123,5 +123,7 @@ public class SegmentExcerpt implements SegmentOperateable {
 		return null;
 	}
 	
-
+	public long getPositonByOffset(int offset){
+		return segment.getStartAddress()+offset;
+	}
 }
