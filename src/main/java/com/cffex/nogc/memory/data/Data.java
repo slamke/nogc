@@ -11,13 +11,17 @@ public class Data {
 	
 	//buffer 大小为128K
 	private static int OFFSET  = 131072;
-	private long freesapce;
+	private int freesapce;
+	private int capacity;
+	
+
 	private long minId;
 	private long maxId;
 	private int count;
 	
-	protected Data(long freespace){
-		this.freesapce = freespace;
+	protected Data(int capacity){
+		this.freesapce = capacity;
+		this.capacity = capacity;
 		this.maxId = 0;
 		this.minId = 0;
 		this.count = 0;
@@ -34,6 +38,13 @@ public class Data {
 		return 0;
 	}
 
+	protected int getCapacity() {
+		return capacity;
+	}
+	protected void setCapacity(int capacity) {
+		this.capacity = capacity;
+	}
+	
 	protected long getFreesapce() {
 		return freesapce;
 	}

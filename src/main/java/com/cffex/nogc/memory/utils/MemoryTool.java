@@ -9,13 +9,28 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
+import sun.misc.Unsafe;
+
 /**
  * @author sunke TaoZhou
  * @ClassName MemoryTool
  * @Description: 堆外内存统一申请和释放工具类
  */
 public class MemoryTool {
+	public final static Unsafe UNSAFE;
+	public static long BYTES_OFFSET;
 	//allocate memory
+	static{
+		try {
+			@SuppressWarnings("ALL")
+			Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+			theUnsafe.setAccessible(true);
+			UNSAFE = (Unsafe) theUnsafe.get(null);
+			BYTES_OFFSET = UNSAFE.arrayBaseOffset(byte[].class);
+		} catch (Exception e) {
+			throw new AssertionError(e);
+		}
+	}
 	public static synchronized ByteBuffer allocate(int capacity) {
 		ByteBuffer byteBuffer = null;
 		byteBuffer = ByteBuffer.allocateDirect(capacity);

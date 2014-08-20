@@ -10,6 +10,7 @@ import com.cffex.nogc.memory.Segment;
 import com.cffex.nogc.memory.SegmentExcerpt;
 import com.cffex.nogc.memory.SegmentOperateable;
 import com.cffex.nogc.memory.buffer.Buffer;
+import com.cffex.nogc.memory.utils.MemoryTool;
 
 public class DataExcerpt implements DataOperateable{
 
@@ -23,12 +24,13 @@ public class DataExcerpt implements DataOperateable{
 	
 	public DataExcerpt(SegmentExcerpt segmentExcerpt){
 		this.segmentExcerpt = segmentExcerpt;
-		
 		data = new Data(Segment.DEFAULT_CAPACITY-Buffer.CAPACITY);
 	}
 	//private methods to implement functions in DataOperateable
+	@SuppressWarnings("unused")
 	private int writeData(byte[] b, long position){
-		return 0;
+		MemoryTool.UNSAFE.copyMemory(b, MemoryTool.BYTES_OFFSET, null, position, b.length);
+		return 1;
 	}
 	private int copyData(byte[] b, long position){
 		return 0;
@@ -39,6 +41,7 @@ public class DataExcerpt implements DataOperateable{
 	private int setIndexRegion(){
 		return 0;
 	}
+	@SuppressWarnings("unused")
 	private int checkFreeSpace(){
 		if(data.getFreesapce() < Data.THRESHOLD){
 			return 0;
@@ -50,8 +53,12 @@ public class DataExcerpt implements DataOperateable{
 		
 		return 0;
 	}
-	
-	
+	private int resize(){
+		return 0;
+	}
+	private int updateIndexData(){
+		return 0;
+	}
 	
 	//implements DataOperateable
 	@Override
