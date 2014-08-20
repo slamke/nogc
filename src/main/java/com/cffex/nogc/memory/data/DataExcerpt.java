@@ -155,6 +155,10 @@ public class DataExcerpt implements DataOperateable{
 		return 0;
 	}
 
+	public int test(){
+		return 0;
+	}
+	
 	@Override
 	public int unlockWriteLock() {
 		// TODO Auto-generated method stub
