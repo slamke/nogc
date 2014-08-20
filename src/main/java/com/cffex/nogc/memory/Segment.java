@@ -20,23 +20,50 @@ public class Segment {
 	 */
 	public final static float DEFAULT_REACTOR = 1.2f;
 	
+	/**
+	 * 目前segment是不是只读状态(默认true：只有insert操作；遇见delete和update后，变为false)
+	 * readonly变为false后，进行merge时需要对data区中的数据进行排序
+	 */
+	private boolean readonly;
 	
-	private int capacity;
-	private ByteBuffer address;
+//	/**
+//	 * segment的容量
+//	 */
+//	private int capacity;
+	
+	/**
+	 * segment的地址空间，通过byteBuffer指向堆外内存
+	 */
+	private ByteBuffer byteBuffer;
+	
+	/**
+	 * byteBuffer的起始地址 
+	 */
+	private long startAddress;
 	
 	public Segment(){
 		super();
-		this.address = MemoryTool.allocate(DEFAULT_CAPACITY);
-		this.capacity = DEFAULT_CAPACITY;
-		//print something
-		int temp_adderss = (int) ((DirectBuffer) address).address();
-		System.out.println(temp_adderss);
+		this.byteBuffer = MemoryTool.allocate(DEFAULT_CAPACITY);
+		startAddress = ((DirectBuffer) byteBuffer).address();
+		readonly = true;
+	}
+	
+	public boolean isReadonly() {
+		return readonly;
 	}
 
-	/**
-	 * @return
-	 */
-	public int getCapactiy() {
-		return this.capacity;
+	public void setReadonly(boolean readonly) {
+		this.readonly = readonly;
 	}
+
+	public long getStartAddress(){
+		return startAddress;
+	}
+
+//	/**
+//	 * @return
+//	 */
+//	public int getCapactiy() {
+//		return this.capacity;
+//	}
 }

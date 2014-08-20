@@ -92,6 +92,8 @@ public class BufferLog {
 		this.index = index;
 	}
 	
-	
+	public byte[] getdata(){
+		return null;
+	} 
 
 }
