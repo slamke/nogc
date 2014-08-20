@@ -41,10 +41,6 @@ public class SegmentExcerpt implements SegmentOperateable {
 		this.dataOperateable = new DataExcerpt(this);
 		this.bufferOperatable = new BufferExcerpt(this);
 	}
-
-	public int getCapacity(){
-		return this.Segment.getCapactiy();
-	}
 	
 	
 	/* (non-Javadoc)
@@ -126,4 +122,6 @@ public class SegmentExcerpt implements SegmentOperateable {
 	private byte[] mergeDataWithOperation(){
 		return null;
 	}
+	
+
 }

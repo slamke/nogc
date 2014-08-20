@@ -7,10 +7,12 @@ package com.cffex.nogc.memory.data;
 public class Data {
 	
 	//阈值设置为256K
-	public final static float THRESHOLD = 256;
+	public static final int THRESHOLD = 256;
 	
-	//buffer 大小为128K
-	private static int OFFSET  = 131072;
+	//segment 头部buffer 大小为128K
+	private static int OFFSET  = 128*1024;
+	
+	//
 	private int freesapce;
 	private int capacity;
 	
