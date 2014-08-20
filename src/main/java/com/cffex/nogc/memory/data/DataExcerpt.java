@@ -5,6 +5,8 @@ package com.cffex.nogc.memory.data;
  * @Description: Data操作接口
  */
 import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import com.cffex.nogc.memory.Segment;
@@ -12,11 +14,14 @@ import com.cffex.nogc.memory.SegmentExcerpt;
 import com.cffex.nogc.memory.SegmentOperateable;
 import com.cffex.nogc.memory.buffer.Buffer;
 import com.cffex.nogc.memory.utils.MemoryTool;
+import com.sun.beans.editors.ByteEditor;
 
 public class DataExcerpt implements DataOperateable{
 
 	//private region
 	private Data data;
+	
+
 	private SegmentExcerpt segmentExcerpt;
 	
 	public DataExcerpt(){
@@ -27,30 +32,42 @@ public class DataExcerpt implements DataOperateable{
 		this.segmentExcerpt = segmentExcerpt;
 		data = new Data(Segment.DEFAULT_CAPACITY-Buffer.CAPACITY);
 	}
+	public Data getData() {
+		return data;
+	}
 	//private methods to implement functions in DataOperateable
+	
+	private int getIndexStartOffset(){
+		return Data.OFFSET+data.getCapacity()-data.getCount()*12;
+	}
 	@SuppressWarnings("unused")
-	private int writeData(byte[] b, long position){
+	private int writeData(byte[] b, int offset){
 		MemoryTool mt = new MemoryTool();
-		mt.writeBytes(b,position);
+		mt.writeBytes(b,segmentExcerpt.getPositonByOffset(offset));
 		return 1;
 	}
-	private int copyData( long position0, int length, long position1){
+	private int copyData( int offset0, int length, int offset1){
 		MemoryTool mt = new MemoryTool();
-		mt.copyBytes(position0, length, position1);
+		mt.copyBytes(segmentExcerpt.getPositonByOffset(offset0), length, segmentExcerpt.getPositonByOffset(offset1));
+		return 1;
+	}
+	private int copyData(byte[] b, int offset){
+		MemoryTool mt = new MemoryTool();
+		mt.copyBytes(b,segmentExcerpt.getPositonByOffset(offset));
 		return 1;
 	}
 	
 	//read long
-	private long getLong(long position){
+	private long getLong(int offset){
 		MemoryTool mt = new MemoryTool();
-		long l = mt.getLong(position);
+		long l = mt.getLong(segmentExcerpt.getPositonByOffset(offset));
   		return l;
 	}
 	
 	//read int
-	private int getInt(long position){
+	private int getInt(int offset){
 		MemoryTool mt = new MemoryTool();
-		int i = mt.getInt(position);
+		int i = mt.getInt(segmentExcerpt.getPositonByOffset(offset));
   		return i;
 	}
 	
@@ -60,11 +77,20 @@ public class DataExcerpt implements DataOperateable{
 	 * 
 	 */
 	private byte[] getBytes(int offset){
-		int len = getInt(offset); //CSON前四位为长度
-		byte[] b = new byte[len+4]; //加上len本身4byte
-  		for(int i=0;i<len;i++){  
+		int length = getInt(offset); //CSON前四位为长度
+		byte[] b = new byte[length+4]; //加上len本身4byte
+  		for(int i=0;i<length;i++){  
   			MemoryTool mt = new MemoryTool();
-  			b[i]=mt.getByte(i+offset);
+  			b[i]=mt.getByte(segmentExcerpt.getPositonByOffset(i+offset));
+  		}
+		return b;
+	}
+	
+	private byte[] getBytes(int offset, int length){
+		byte[] b = new byte[length];
+		for(int i=0;i<length;i++){  
+  			MemoryTool mt = new MemoryTool();
+  			b[i]=mt.getByte(segmentExcerpt.getPositonByOffset(i+offset));
   		}
 		return b;
 	}
@@ -146,11 +172,14 @@ public class DataExcerpt implements DataOperateable{
 
 	
 	private Object[] GetIndexRegion(long minid, long maxid){
-		Object[] result =null;
+		
 		int offset1 = findIdOffset(minid);
 		int offset2 = findIdOffset(maxid);
-		for(int i = 0; i < (offset2-offset1)/12; i++){
-			
+		int size = (offset1-offset2)/12;
+		Object[] result = new Object[size*2];
+		for(int i = 0; i < size; i++){
+			result[(size-1)*2] = getLong(offset1-8);
+			result[(size-1)*2+1] = getInt(offset1-8);
 		}
 		return result;
 	}
@@ -169,15 +198,62 @@ public class DataExcerpt implements DataOperateable{
 	private int resize(){
 		return 0;
 	}
-	private int updateIndexData(){
+	
+	//更新index中的offset值
+	private byte[] updateIndex(byte[] index, int addoffset){
+		int size = index.length/12;
+		for(int i = 0; i<size; i++){
+			int newoffset = getInt(size*12)+addoffset;
+			index[12*i] = (byte) ((newoffset >> 24) & 0xFF);
+			index[12*i+1] = (byte) ((newoffset >> 16) & 0xFF);
+			index[12*i+2] = (byte) ((newoffset >> 8)  & 0xFF);
+			index[12*i+3] = (byte) (newoffset& 0xFF);
+		}
+		return null;
+		
+	}
+	private int updateIndexData(byte[] index, int addoffset){
 		return 0;
 	}
 	
+	
+	
 	//implements DataOperateable
 	@Override
-	public int insertDataWithIdRange(byte[] b, long minid, long maxid) {
+	public int insertDataWithIdRange(byte[] data, byte[] index, long minId, long maxId) {
 		// TODO Auto-generated method stub
-		
+		if(minId<getData().getMinId()){
+			getData().setMinId(minId);
+		}
+		if(maxId > getData().getMaxId()){
+			getData().setMaxId(maxId);
+		}
+		int indexStartOffset = getIndexStartOffset();//index 开始的offset
+		int minIndexOffset = findIdOffset(minId);//找到最小id的index offset
+		int maxIndexOffset = findIdOffset(maxId);//找到最大id的index offset
+
+		/*
+		 * insert into data
+		 */
+		int minDataStartOffset = getInt(minIndexOffset-12);//最小id的data offset
+		int maxDataStartOffset = getInt(maxIndexOffset-12);//最大id的data offset
+		//最后一个data结束的位置 = data offset+cson length(4) + length
+		int DataEndOffset = getInt(indexStartOffset)+4+getInt(getInt(indexStartOffset));
+		byte[] tempdata = getBytes(maxDataStartOffset, DataEndOffset-maxDataStartOffset+1);
+		copyData(data, minDataStartOffset);
+		copyData(tempdata, minDataStartOffset+data.length);
+		/*
+		 * insert into index
+		 */
+		//获取要搬移的index数据
+		byte[] tempIndex = getBytes(indexStartOffset, maxIndexOffset - indexStartOffset);
+		//index区数据要更新，offset值重新设置 现在data的长度-原来data的长度
+		int addOffset = data.length-(getInt(maxIndexOffset-12)-getInt(minIndexOffset-12));
+		tempIndex = updateIndex(tempIndex, addOffset);
+		//移动index区数据
+		copyData(tempIndex, indexStartOffset-(index.length-(maxIndexOffset-minIndexOffset)));
+		//写入新的index
+		writeData(index, minIndexOffset+index.length);
 		return 0;
 	}
 
@@ -211,9 +287,16 @@ public class DataExcerpt implements DataOperateable{
 	}
 
 	@Override
-	public byte[] getDataWithIdRange(long minid, long maxid) {
+	public byte[] getDataWithIdRange(long minId, long maxId) {
 		// TODO Auto-generated method stub
-		return null;
+		int minIndexOffset = findIdOffset(minId);//找到最小id的index offset
+		int maxIndexOffset = findIdOffset(maxId);//找到最大id的index offset
+		int minDataOffset = getInt(minIndexOffset-12);//最小id的data offset
+		int maxDataOffset = getInt(maxIndexOffset-12);//最大id的data offset
+		//最后一个data结束的位置 = data offset+cson length(4) + length
+		int maxDataEndOffset = getInt(maxDataOffset) + 4 +getInt(getInt(maxDataOffset));
+		byte[] result = getBytes(minDataOffset, maxDataEndOffset - minDataOffset+1);
+		return result;
 	}
 	
 	
