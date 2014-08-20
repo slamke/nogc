@@ -39,20 +39,6 @@ public class DataExcerpt implements DataOperateable{
 		mt.copyBytes(position0, length, position1);
 		return 1;
 	}
-	private Array GetIndexRegion(long minid, long maxid){
-		return null;
-	}
-	private int setIndexRegion(){
-		return 0;
-	}
-	@SuppressWarnings("unused")
-	private int checkFreeSpace(){
-		if(data.getFreesapce() < Data.THRESHOLD){
-			return 0;
-		}else{
-			return 1;
-		}
-	}
 	
 	//read long
 	private long getLong(long position){
@@ -67,16 +53,56 @@ public class DataExcerpt implements DataOperateable{
 		int i = mt.getInt(position);
   		return i;
 	}
+	
+	/*
+	 * @param offset data的offset
+	 * 不同的存储形式 长度存放在哪
+	 * 
+	 */
 	private byte[] getBytes(int offset){
-		int len = getInt(offset);
-		byte[] b = new byte[len];
+		int len = getInt(offset); //CSON前四位为长度
+		byte[] b = new byte[len+4]; //加上len本身4byte
   		for(int i=0;i<len;i++){  
   			MemoryTool mt = new MemoryTool();
-  			b[i]=mt.getByte(i+offset); //存储位置在foo之后
+  			b[i]=mt.getByte(i+offset);
   		}
 		return b;
 	}
 	
+
+	
+	/*
+	 * 在Index区二分查找
+	 * @param id 查找的id
+	 * @return offset的值
+	 */
+	private int getOffsetById(long id) {
+		int position = binarySearchById(id);
+		if(position < 0){
+			return -1;
+		}else{
+			int offset = getInt(position);
+			return offset;
+		}
+		
+	}
+	
+	/*
+	 * index(id+offset)
+	 * 找到index中id对应offset的位置
+	 */
+	private int binarySearchById(long id){
+		
+		if(data.getCount() == 0){
+			return -1;
+		}else{
+			int begin = 0;
+			int end = data.getCount()*12;//index为int+long
+			int position = binarySearch(begin, end, id);
+			return position;
+		}
+
+	}
 	private int binarySearch(int begin, int end, long id){
 		int position = Data.OFFSET+data.getCapacity()-(begin+end)/2-8;
 		long minId = getLong(position);
@@ -95,26 +121,55 @@ public class DataExcerpt implements DataOperateable{
 	}
 	
 	/*
-	 * 在Index区二分查找
-	 * @para id 查找的id
-	 * @return offset
+	 * 找到id的合适位置
 	 */
-	private int getOffsetById(long id) {
-		int position = binarySearchById(id);
-		if(position < 0){
+	private int findIdOffset(long id){
+		if(data.getCount() == 0){
 			return -1;
 		}else{
-			int offset = getInt(position);
-			return offset;
+			if(id > data.getMaxId()){
+				
+			}else if(id< data.getMinId()){
+				
+			}
+			int begin = 0;
+			int end = data.getCount()*12;//index为int+long
+			int position = findIdOffset(begin, end, id);
+			return position;
 		}
-		
+	}
+	private int findIdOffset(int begin, int end, long id){
+		int position = Data.OFFSET+data.getCapacity()-(begin+end)/2-8;
+		long minId = getLong(position);
+		if(end-begin>=8){
+			if(id>minId){
+				findIdOffset(begin,position+8,id);
+			}else if(id<minId){
+				findIdOffset(position-4,end,id);
+			}else{
+				return position-4;
+			}
+		}else{
+			return -1;
+		}
+		return -1;
+
 	}
 	
-	private int binarySearchById(long id){
-		int begin = 0;
-		int end = data.getCount()*12;//index为int+long
-		int position = binarySearch(begin, end, id);
-		return position;
+	private Object[] GetIndexRegion(long minid, long maxid){
+		
+		return null;
+	}
+	private int setIndexRegion(){
+		return 0;
+	}
+	@SuppressWarnings("unused")
+	private int checkFreeSpace(){
+		if(data.getFreesapce() < Data.THRESHOLD){
+			return 0;
+		}else{
+			return 1;
+		}
 	}
 	
 	private int resize(){
@@ -155,10 +210,6 @@ public class DataExcerpt implements DataOperateable{
 		return 0;
 	}
 
-	public int test(){
-		return 0;
-	}
-	
 	@Override
 	public int unlockWriteLock() {
 		// TODO Auto-generated method stub
