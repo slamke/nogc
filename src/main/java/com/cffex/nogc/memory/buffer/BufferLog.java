@@ -1,5 +1,10 @@
 package com.cffex.nogc.memory.buffer;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
+import com.cffex.nogc.memory.buffer.exception.BufferLogException;
+
 /**
  * @author sunke
  * @ClassName BufferLog
@@ -12,7 +17,10 @@ public class BufferLog {
 		DELETE(1),
 		UPDATE_ALL(2),
 		UPDATE_PROPERTY(3);
+		
 		private final byte value;
+		public static BufferLogType[] array = new BufferLogType[]{INSERT,DELETE,UPDATE_ALL,UPDATE_PROPERTY};
+		
 		public byte getValue(){
 			return value;
 		}
@@ -21,18 +29,7 @@ public class BufferLog {
 		}
 		
 		public static BufferLogType getBufferLogType(byte value){
-			switch (value) {
-			case 0:
-				return INSERT;
-			case 1:
-				return DELETE;
-			case 2:
-				return UPDATE_ALL;
-			case 3:
-				return UPDATE_PROPERTY;
-			default:
-				return INSERT;
-			}
+			return array[value];
 		}
 	}
 	
@@ -64,10 +61,6 @@ public class BufferLog {
 	 */
 	public BufferLog(BufferLogType flag, long id, byte[] value) {
 		super();
-		if (flag == BufferLogType.UPDATE_PROPERTY) {
-			throw new IllegalArgumentException("Can not use this constructor when update a prperty "
-					+ "of an object.Use public BufferLog(int flag, long id, byte[] value,int index) to set index.");
-		}
 		this.flag = flag;
 		this.id = id;
 		this.value = value;
@@ -82,18 +75,71 @@ public class BufferLog {
 	 */
 	public BufferLog(BufferLogType flag, long id, byte[] value, int index) {
 		super();
-		if (flag == BufferLogType.UPDATE_PROPERTY &&
-				index < 0) {
-			throw new IllegalArgumentException("Index cannot be negative when update a property of an object");
-		}
 		this.flag = flag;
 		this.id = id;
 		this.value = value;
 		this.index = index;
 	}
 	
-	public byte[] getdata(){
+	/**
+	 * 计算本log的长度
+	 * @return 长度值
+	 * @throws BufferLogException
+	 */
+	public int getLength() throws BufferLogException{
+		//insert  UPDATE_ALL:flag+id+data
+		if (flag == BufferLogType.INSERT || flag == BufferLogType.UPDATE_ALL) {
+			if (value == null) {
+				throw new BufferLogException("Value cannot be null when insert or update whole item.");
+			}else {
+				return 1+8+value.length;
+			}
+		}
+		//DELETE:flag+id
+		else if(flag == BufferLogType.DELETE){
+			return 1+8;
+		}
+		//UPDATE_PROPERTY: flag+id+index+data
+		else if (flag == BufferLogType.UPDATE_PROPERTY) {
+			if (value == null) {
+				throw new BufferLogException("Value cannot be null when update item property.");
+			}else {
+				return 1+8+4+value.length;
+			}
+		}
+		return 0;
+	}
+	/**
+	 * 将bufferLog转为bytebuffer用于写入
+	 * @return bytebuffer
+	 */
+	public ByteBuffer toBytebuffer(){
+		try {
+			int length = getLength();
+			ByteBuffer buffer = ByteBuffer.allocate(length).order(ByteOrder.LITTLE_ENDIAN);
+			buffer.put(flag.getValue());
+			buffer.putLong(id);
+			//insert:flag+id+data
+			if (flag == BufferLogType.INSERT || flag == BufferLogType.UPDATE_ALL) {
+				buffer.put(value);
+			}else if(flag == BufferLogType.UPDATE_PROPERTY) {
+				if (index <0) {
+					throw new IllegalArgumentException("Index cannot be negative when update a property of an object");
+				}else {
+					buffer.putInt(index);
+					buffer.put(value);
+				}
+			}
+			return buffer;
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (BufferLogException e) {
+			e.printStackTrace();
+		}
 		return null;
-	} 
+	}
 
+	//public static BufferLog constructBufferLog(byte []){
+	//	return null;
+	//}  
 }

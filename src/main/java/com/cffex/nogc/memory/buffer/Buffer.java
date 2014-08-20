@@ -22,7 +22,7 @@ public class Buffer {
 	 */
 	public static final int CAPACITY = 128 * 1024;
 
-	// private transient int state;
+	private transient int modCount;
 	/**
 	 * 使用原子性的integer，用以支持spin lock
 	 */
@@ -41,14 +41,25 @@ public class Buffer {
         return v;
 	}
 
-	// public int getState() {
-	// return state;
-	// }
-	// public void setState(int state) {
-	// this.state = state;
-	// }
+	/**
+	 * 获取modCount-->buffer的状态改变。。。
+	 * @return modCount
+	 */
+	public int getModCount() {
+		return modCount;
+	}
+
+
+
+	public void addModCount() {
+		this.modCount++;
+	}
 
 	public int getOffsetByLength(int length) {
 		return OFFSET+length;
+	}
+
+	public int getLength() {
+		return length.get();
 	}
 }
