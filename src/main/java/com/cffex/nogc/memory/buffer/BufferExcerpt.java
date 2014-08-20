@@ -2,41 +2,54 @@ package com.cffex.nogc.memory.buffer;
 
 import java.util.List;
 
+import com.cffex.nogc.memory.SegmentExcerpt;
 import com.cffex.nogc.memory.SegmentOperateable;
 
 /**
  * 
  * @author sunke
- * @ClassName SegmentExcerpt
- * @Description: TODO
+ * @ClassName BufferExcerpt
+ * @Description: buffer操作接口的真实实现类， 包含了具体的底层操作原语
  */
 public class BufferExcerpt implements BufferOperatable{
+	
 	private Buffer buffer;
-	private SegmentOperateable segmentOperateable;
-	public BufferExcerpt(SegmentOperateable segmentOperateable){
-		this.segmentOperateable = segmentOperateable;
+	private SegmentExcerpt segmentExcerpt;
+	
+	public BufferExcerpt(SegmentExcerpt segmentExcerpt){
+		this.segmentExcerpt = segmentExcerpt;
 	}
+	
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.buffer.BufferOperatable#appendOperation(com.cffex.nogc.memory.buffer.BufferLog)
 	 */
 	@Override
-	public boolean appendOperation(BufferLog log) {
-		// TODO Auto-generated method stub
+	public final boolean appendOperation(BufferLog log) {
+		try {
+			int length = log.getLength();
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+		
 		return false;
 	}
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.buffer.BufferOperatable#tryLockWithLength(int)
 	 */
 	@Override
-	public boolean tryLockWithLength(int length) {
-		// TODO Auto-generated method stub
-		return false;
+	public final boolean tryLockWithLength(int length) {
+		boolean lockResult = lock();
+		if (lockResult) {
+			checkMerge(length);
+		}
+		return lockResult;
 	}
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.buffer.BufferOperatable#getById(long)
 	 */
 	@Override
-	public List<BufferLog> getById(long id) {
+	public final List<BufferLog> getById(long id) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -44,8 +57,18 @@ public class BufferExcerpt implements BufferOperatable{
 	 * @see com.cffex.nogc.memory.buffer.BufferOperatable#getPropertyById(long, int)
 	 */
 	@Override
-	public byte[] getPropertyById(long id, int index) {
+	public final byte[] getPropertyById(long id, int index) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	private void updateLength(){
+		
+	}
+	private void append(){}
+	private boolean lock(){return false;}
+	private boolean checkFreeSpace(){return false;}
+	private boolean swapDataAndMarkFree(){return false;}
+	private boolean unlock(){return false;}
+	private boolean checkMerge(int length){return false;}
 }

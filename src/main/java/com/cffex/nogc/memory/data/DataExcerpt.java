@@ -5,6 +5,7 @@ package com.cffex.nogc.memory.data;
  * @Description: Data操作接口
  */
 import java.lang.reflect.Array;
+import java.util.Arrays;
 
 import com.cffex.nogc.memory.Segment;
 import com.cffex.nogc.memory.SegmentExcerpt;
@@ -28,12 +29,15 @@ public class DataExcerpt implements DataOperateable{
 	}
 	//private methods to implement functions in DataOperateable
 	@SuppressWarnings("unused")
-	private int writeData(byte[] b, long position){
-		MemoryTool.UNSAFE.copyMemory(b, MemoryTool.BYTES_OFFSET, null, position, b.length);
+	private int writeData(byte[] b, int position){
+		MemoryTool mt = new MemoryTool();
+		mt.writeBytes(b,position);
 		return 1;
 	}
-	private int copyData(byte[] b, long position){
-		return 0;
+	private int copyData( int position0, int length, int position1){
+		MemoryTool mt = new MemoryTool();
+		mt.copyBytes(position0, length, position1);
+		return 1;
 	}
 	private Array GetIndexRegion(long minid, long maxid){
 		return null;
@@ -49,10 +53,70 @@ public class DataExcerpt implements DataOperateable{
 			return 1;
 		}
 	}
-	private int binarySearchById(long id){
-		
-		return 0;
+	
+	//read long
+	private long getLong(long position){
+		MemoryTool mt = new MemoryTool();
+		long l = mt.getLong(position);
+  		return l;
 	}
+	
+	//read int
+	private int getInt(int position){
+		MemoryTool mt = new MemoryTool();
+		int i = mt.getInt(position);
+  		return i;
+	}
+	private byte[] getBytes(int offset){
+		int len = getInt(offset);
+		byte[] b = new byte[len];
+  		for(int i=0;i<len;i++){  
+  			MemoryTool mt = new MemoryTool();
+  			b[i]=mt.getByte(i+offset); //存储位置在foo之后
+  		}
+		return b;
+	}
+	
+	private int binarySearch(int begin, int end, long id){
+		int position = Data.OFFSET+data.getCapacity()-(begin+end)/2-8;
+		long minId = getLong(position);
+		if(end-begin>=8){
+			if(id>minId){
+				binarySearch(begin,position+8,id);
+			}else if(id<minId){
+				binarySearch(position-4,end,id);
+			}else{
+				return position-4;
+			}
+		}else{
+			return -1;
+		}
+		return -1;
+	}
+	
+	/*
+	 * 在Index区二分查找
+	 * @para id 查找的id
+	 * @return offset
+	 */
+	private int getOffsetById(long id) {
+		int position = binarySearchById(id);
+		if(position < 0){
+			return -1;
+		}else{
+			int offset = getInt(position);
+			return offset;
+		}
+		
+	}
+	
+	private int binarySearchById(long id){
+		int begin = 0;
+		int end = data.getCount()*12;//index为int+long
+		int position = binarySearch(begin, end, id);
+		return position;
+	}
+	
 	private int resize(){
 		return 0;
 	}
@@ -77,7 +141,12 @@ public class DataExcerpt implements DataOperateable{
 	@Override
 	public byte[] getById(long id) {
 		// TODO Auto-generated method stub
-		return null;
+		int offset = getOffsetById(id);
+		if(offset < 0){
+			return null;
+		}else{
+			return getBytes(offset);
+		}
 	}
 
 	@Override
