@@ -1,8 +1,3 @@
-/**
- * @time 2014年8月19日
- * @author sunke
- * @Description TODO
- */
 package com.cffex.nogc.memory.utils;
 
 import java.lang.reflect.Field;
@@ -17,8 +12,8 @@ import sun.misc.Unsafe;
  * @Description: 堆外内存统一申请和释放工具类
  */
 public class MemoryTool {
-	public final  Unsafe UNSAFE;
-	public long BYTES_OFFSET;
+	private final  Unsafe UNSAFE;
+	private long BYTES_OFFSET;
 
 	/**
 	 * 
@@ -26,7 +21,7 @@ public class MemoryTool {
 	public MemoryTool(){
 		// TODO Auto-generated constructor stub
 		try {
-			@SuppressWarnings("ALL")
+			@SuppressWarnings("all")
 			Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
 			theUnsafe.setAccessible(true);
 			UNSAFE = (Unsafe) theUnsafe.get(null);
