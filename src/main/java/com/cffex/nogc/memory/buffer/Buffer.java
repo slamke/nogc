@@ -28,6 +28,17 @@ public class Buffer {
 	 */
 	private volatile AtomicInteger length;
 	
+	
+	
+	/**
+	 * 构造函数
+	 */
+	public Buffer() {
+		super();
+		this.length = new AtomicInteger(0);
+		this.modCount = 0;
+	}
+
 	/**
 	 * 增加buffer区的长度，增量为increment
 	 * @param increment 长度增量
@@ -39,6 +50,16 @@ public class Buffer {
             v = length.get();
         }while (!length.compareAndSet(v, v + increment));
         return v;
+	}
+	
+	/**
+	 * 释放buffer区，将buffer区长度置为0即可
+	 */
+	public void freeBuffer(){
+		int v = 0;
+        do {
+            v = length.get();
+        }while (!length.compareAndSet(v, 0));
 	}
 
 	/**
