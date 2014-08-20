@@ -1,8 +1,8 @@
 package com.cffex.nogc.memory;
 
 import java.nio.ByteBuffer;
-
 import sun.nio.ch.DirectBuffer;
+import com.cffex.nogc.memory.utils.MemoryTool;
 
 /**
  * @author sunke TaoZhou
@@ -43,7 +43,7 @@ public class Segment {
 	
 	public Segment(){
 		super();
-		byteBuffer = ByteBuffer.allocateDirect(DEFAULT_CAPACITY);
+		this.byteBuffer = MemoryTool.allocate(DEFAULT_CAPACITY);
 		startAddress = ((DirectBuffer) byteBuffer).address();
 		readonly = true;
 	}
@@ -59,4 +59,11 @@ public class Segment {
 	public long getStartAddress(){
 		return startAddress;
 	}
+
+//	/**
+//	 * @return
+//	 */
+//	public int getCapactiy() {
+//		return this.capacity;
+//	}
 }
