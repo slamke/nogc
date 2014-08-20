@@ -23,11 +23,25 @@ public class Buffer {
 	public static final int CAPACITY = 128 * 1024;
 
 	// private transient int state;
+	
 	/**
 	 * 使用原子性的integer，用以支持spin lock
 	 */
 	private volatile AtomicInteger length;
 	
+	///**
+	// * buffer区的起始地址
+	// */
+	//private final long startAddress;
+	
+	/** 创建一个新的buffer
+	 * @param startAddress buffer的起始地址
+	 */
+	public Buffer() {
+		super();
+		this.length = new AtomicInteger(0);
+	}
+
 	/**
 	 * 增加buffer区的长度，增量为increment
 	 * @param increment 长度增量

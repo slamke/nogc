@@ -4,7 +4,6 @@ import com.cffex.nogc.enumeration.IsolationType;
 import com.cffex.nogc.memory.SegmentOperateable;
 import com.cffex.nogc.memory.buffer.BufferExcerpt;
 import com.cffex.nogc.memory.buffer.BufferOperatable;
-import com.cffex.nogc.memory.data.DataExcerpt;
 import com.cffex.nogc.memory.data.DataOperateable;
 
 /**
@@ -21,7 +20,7 @@ public class SegmentExcerpt implements SegmentOperateable {
 	/**
 	 * 段数据
 	 */
-	private Segment Segment;
+	private Segment segment;
 
 	
 	private BufferOperatable bufferOperatable;
@@ -36,9 +35,9 @@ public class SegmentExcerpt implements SegmentOperateable {
 			Segment segment) {
 		super();
 		this.isolationType = isolationType;
-		Segment = segment;
+		segment = segment;
 		
-		this.dataOperateable = new DataExcerpt(this);
+		//this.dataOperateable = new DataExcerpt(this);
 		this.bufferOperatable = new BufferExcerpt(this);
 	}
 
@@ -120,5 +119,9 @@ public class SegmentExcerpt implements SegmentOperateable {
 	 */
 	private byte[] mergeDataWithOperation(){
 		return null;
+	}
+	
+	public long getSegmentStartAddress(){
+		return segment.getStartAddress(); 
 	}
 }
