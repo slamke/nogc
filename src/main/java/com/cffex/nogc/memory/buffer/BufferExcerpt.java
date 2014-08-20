@@ -1,12 +1,13 @@
 package com.cffex.nogc.memory.buffer;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import com.cffex.nogc.memory.SegmentExcerpt;
-import com.cffex.nogc.memory.SegmentOperateable;
+import com.cffex.nogc.memory.buffer.exception.BufferLogException;
+import com.cffex.nogc.memory.utils.MemoryTool;
 
 /**
- * 
  * @author sunke
  * @ClassName BufferExcerpt
  * @Description: buffer操作接口的真实实现类， 包含了具体的底层操作原语
@@ -17,6 +18,7 @@ public class BufferExcerpt implements BufferOperatable{
 	private SegmentExcerpt segmentExcerpt;
 	
 	public BufferExcerpt(SegmentExcerpt segmentExcerpt){
+		this.buffer = new Buffer();
 		this.segmentExcerpt = segmentExcerpt;
 	}
 	
@@ -27,12 +29,15 @@ public class BufferExcerpt implements BufferOperatable{
 	public final boolean appendOperation(BufferLog log) {
 		try {
 			int length = log.getLength();
-		} catch (Exception e) {
-			// TODO: handle exception
+			int startPoint = updateLength(length);
+			append(log,startPoint);
+			return true;
+		} catch (BufferLogException e) {
+			e.printStackTrace();
+			return false;
+		}finally{
+			unlock();
 		}
-		
-		
-		return false;
 	}
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.buffer.BufferOperatable#tryLockWithLength(int)
@@ -62,10 +67,21 @@ public class BufferExcerpt implements BufferOperatable{
 		return null;
 	}
 	
-	private void updateLength(){
-		
+	/**
+	 * 更新buffer的长度
+	 * @param length buffer长度的增量
+	 * @return 长度增加后，可用长度相对于buffer的偏移量
+	 */
+	private int updateLength(int length){
+		return buffer.updateLengthWithIncrement(length);
 	}
-	private void append(){}
+	
+	private void append(BufferLog log,int startLength){
+		ByteBuffer byteBuffer = log.toBytebuffer();
+		int offset = buffer.getOffsetByLength(startLength);
+		MemoryTool tool = new MemoryTool();
+		tool.writeBytes(byteBuffer.array(), offset);
+	}
 	private boolean lock(){return false;}
 	private boolean checkFreeSpace(){return false;}
 	private boolean swapDataAndMarkFree(){return false;}
