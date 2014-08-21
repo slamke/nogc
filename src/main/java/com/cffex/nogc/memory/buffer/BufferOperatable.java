@@ -2,6 +2,8 @@ package com.cffex.nogc.memory.buffer;
 
 import java.util.List;
 
+import com.cffex.nogc.memory.utils.PotentialProblem;
+
 /**
  * 
  * @author sunke
@@ -29,6 +31,8 @@ public interface BufferOperatable {
 	 * @param id 标志id
 	 * @return log列表
 	 */
+	@PotentialProblem(reason="对于buffer进行读取，不进行加锁，与写进行并行；每次写数据时，先更新buffer的长度",
+			problem="读取的数据可能会读取到尚未完全写入的数据")
 	public List<BufferLog> getById(long id);
 
 	/**
@@ -37,5 +41,7 @@ public interface BufferOperatable {
 	 * @param index 属性的索引
 	 * @return property的数据
 	 */
+	@PotentialProblem(reason="对于buffer进行读取，不进行加锁，与写进行并行；每次写数据时，先更新buffer的长度",
+			problem="读取的数据可能会读取到尚未完全写入的数据")
 	public byte[] getPropertyById(long id, int index);
 }
