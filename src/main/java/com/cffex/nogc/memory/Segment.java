@@ -54,6 +54,14 @@ public class Segment {
 		//this.noGcData = new NoGcByteBuffer(Buffer.CAPACITY, DEFAULT_CAPACITY, (DirectBuffer)byteBuffer);
 	}
 	
+	public Segment(DirectBuffer directBuffer){
+		super();
+		this.byteBuffer = directBuffer;
+		//startAddress = ((DirectBuffer) byteBuffer).address();
+		readonly = true;
+		//this.noGcData = new NoGcByteBuffer(Buffer.CAPACITY, DEFAULT_CAPACITY, (DirectBuffer)byteBuffer);
+	}
+	
 	/**
 	 * @param capacity
 	 */

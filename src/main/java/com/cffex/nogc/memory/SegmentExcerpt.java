@@ -1,10 +1,15 @@
 package com.cffex.nogc.memory;
 
+import sun.nio.ch.DirectBuffer;
+
 import com.cffex.nogc.enumeration.IsolationType;
+import com.cffex.nogc.memory.buffer.Buffer;
 import com.cffex.nogc.memory.buffer.BufferExcerpt;
 import com.cffex.nogc.memory.buffer.BufferOperatable;
+import com.cffex.nogc.memory.data.Data;
 import com.cffex.nogc.memory.data.DataExcerpt;
 import com.cffex.nogc.memory.data.DataOperateable;
+import com.cffex.nogc.memory.utils.MemoryTool;
 
 /**
  * SegmentExcerpt
@@ -23,6 +28,8 @@ public class SegmentExcerpt implements SegmentOperateable {
 	private Segment segment;
 
 	
+
+
 	private BufferOperatable bufferOperatable;
 	
 	private DataOperateable dataOperateable;
@@ -31,16 +38,22 @@ public class SegmentExcerpt implements SegmentOperateable {
 	 * @param isolationType 隔离级别 
 	 * @param segment 段数据
 	 */
-	public SegmentExcerpt(IsolationType isolationType,
-			Segment segment) {
+	public SegmentExcerpt(IsolationType isolationType) {
 		super();
+		DirectBuffer directBuffer = MemoryTool.allocate(Segment.DEFAULT_CAPACITY);
+		segment = new Segment(directBuffer);
+		NoGcByteBuffer nogcData = new NoGcByteBuffer(Data.OFFSET, Segment.DEFAULT_CAPACITY - Buffer.CAPACITY,
+				directBuffer);
+		NoGcByteBuffer nogcBuffer = new NoGcByteBuffer(Buffer.OFFSET, Buffer.CAPACITY,
+				directBuffer);
 		this.isolationType = isolationType;
-		this.segment = segment;
 		this.dataOperateable = new DataExcerpt(this);
-		this.bufferOperatable = new BufferExcerpt(this);
+		this.bufferOperatable = new BufferExcerpt(this,nogcBuffer);
 	}
 	
-	
+	public Segment getSegment() {
+		return segment;
+	}
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.SegmentOperateable#insertItem(long, byte[])
 	 */
