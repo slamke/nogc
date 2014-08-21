@@ -47,7 +47,7 @@ public class SegmentExcerpt implements SegmentOperateable {
 		NoGcByteBuffer nogcBuffer = new NoGcByteBuffer(Buffer.OFFSET, Buffer.CAPACITY,
 				directBuffer);
 		this.isolationType = isolationType;
-		this.dataOperateable = new DataExcerpt(this);
+		this.dataOperateable = new DataExcerpt(this,nogcData);
 		this.bufferOperatable = new BufferExcerpt(this,nogcBuffer);
 	}
 	
