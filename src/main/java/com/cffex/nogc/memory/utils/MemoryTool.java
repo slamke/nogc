@@ -88,6 +88,10 @@ public class MemoryTool {
 		this.UNSAFE.copyMemory(b, BYTES_OFFSET, null, position1, b.length);
 	}
 	
+	public void copyBytes(byte[] b, long position){
+		this.UNSAFE.copyMemory(b, BYTES_OFFSET, null, position, b.length);
+	}
+	
 	//allocate memory
 	public static synchronized ByteBuffer allocate(int capacity) {
 		ByteBuffer byteBuffer = null;

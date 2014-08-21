@@ -5,10 +5,24 @@ package com.cffex.nogc.memory.data;
  * @Description: Data接口
  */
 public interface DataOperateable {
-	public int insertDataWithIdRange(byte[] b, long minid, long maxid);
 	public int tryReadLock();
 	public byte[] getById(long id);
 	public int tryWriteLock();
 	public int unlockWriteLock();
-	public byte[] getDataWithIdRange(long minid, long maxid);
+	/**
+	 * @param minId
+	 * @param maxId
+	 * @return
+	 */
+	public byte[] getDataWithIdRange(long minId, long maxId);
+
+	/**
+	 * @param data
+	 * @param index
+	 * @param minId
+	 * @param maxId
+	 * @return
+	 */
+	int insertDataWithIdRange(byte[] data, byte[] index, long minId,
+			long maxId);
 }
