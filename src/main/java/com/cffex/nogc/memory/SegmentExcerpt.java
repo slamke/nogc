@@ -24,6 +24,8 @@ public class SegmentExcerpt implements SegmentOperateable {
 	private Segment segment;
 
 	
+
+
 	private BufferOperatable bufferOperatable;
 	
 	private DataOperateable dataOperateable;
@@ -41,7 +43,9 @@ public class SegmentExcerpt implements SegmentOperateable {
 		this.bufferOperatable = new BufferExcerpt(this);
 	}
 	
-	
+	public Segment getSegment() {
+		return segment;
+	}
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.SegmentOperateable#insertItem(long, byte[])
 	 */
