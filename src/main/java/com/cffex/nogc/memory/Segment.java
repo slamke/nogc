@@ -1,10 +1,7 @@
 package com.cffex.nogc.memory;
 
-import java.nio.ByteBuffer;
-
 import sun.nio.ch.DirectBuffer;
 
-import com.cffex.nogc.memory.buffer.Buffer;
 import com.cffex.nogc.memory.utils.MemoryTool;
 
 /**
@@ -44,15 +41,15 @@ public class Segment {
 
 	
 
-	/**
-	 * byteBuffer的起始地址 
-	 */
-	private long startAddress;
+//	/**
+//	 * byteBuffer的起始地址 
+//	 */
+//	private long startAddress;
 	
 	public Segment(){
 		super();
 		this.byteBuffer = MemoryTool.allocate(DEFAULT_CAPACITY);
-		startAddress = ((DirectBuffer) byteBuffer).address();
+		//startAddress = ((DirectBuffer) byteBuffer).address();
 		readonly = true;
 		//this.noGcData = new NoGcByteBuffer(Buffer.CAPACITY, DEFAULT_CAPACITY, (DirectBuffer)byteBuffer);
 	}
@@ -64,7 +61,7 @@ public class Segment {
 		// TODO Auto-generated constructor stub
 		super();
 		this.byteBuffer = MemoryTool.allocate(capacity);
-		startAddress = ((DirectBuffer) byteBuffer).address();
+		//startAddress = ((DirectBuffer) byteBuffer).address();
 		readonly = true;
 		//this.noGcData = new NoGcByteBuffer(Buffer.CAPACITY, capacity, (DirectBuffer)byteBuffer);
 	}
@@ -80,9 +77,9 @@ public class Segment {
 		this.readonly = readonly;
 	}
 
-	public long getStartAddress(){
+/*	public long getStartAddress(){
 		return startAddress;
-	}
+	}*/
 
 //	/**
 //	 * @return
