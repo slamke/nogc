@@ -11,10 +11,10 @@ package com.cffex.nogc.memory.buffer;
  */
 public class MergeTaskQueue {
 	
-	public static void putTask(TempBuffer tempBuffer) {
+	public static void putTask(MergeTask task) {
 	}
 
-	public static TempBuffer takeTask() {
+	public static MergeTask takeTask() {
 		return null;
 	}
 }

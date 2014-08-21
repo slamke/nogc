@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import com.cffex.nogc.cson.core.utils.Tuple;
+import com.cffex.nogc.memory.NoGcByteBuffer;
 import com.cffex.nogc.memory.SegmentExcerpt;
 
 /**
@@ -15,17 +16,14 @@ import com.cffex.nogc.memory.SegmentExcerpt;
  * @ClassName TempBuffer
  * @Description: TempBuffer为buffer的拷贝版本，用于merge
  */
-public class TempBuffer{
+public class TempBuffer extends Buffer{
 	
 	private List<BufferLog> insertIndexList;
 	private List<BufferLog> updateIndexList;
 	private long minId;
 	private long maxId;
-	private ByteBuffer data;
-	private SegmentExcerpt segmentExcerpt;
-	public TempBuffer(ByteBuffer buffer,SegmentExcerpt segmentExcerpt){
-		this.data = buffer;
-		this.segmentExcerpt = segmentExcerpt;
+	public TempBuffer(NoGcByteBuffer noGcByteBuffer){
+		super(noGcByteBuffer);
 	}
 	
 	/**
