@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
 import sun.misc.Unsafe;
+import sun.nio.ch.DirectBuffer;
 
 /**
  * @author sunke TaoZhou
@@ -12,90 +13,90 @@ import sun.misc.Unsafe;
  * @Description: 堆外内存统一申请和释放工具类
  */
 public class MemoryTool {
-	private final  Unsafe UNSAFE;
-	private long BYTES_OFFSET;
-
-	/**
-	 * 
-	 */
-	public MemoryTool(){
-		// TODO Auto-generated constructor stub
-		try {
-			@SuppressWarnings("all")
-			Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
-			theUnsafe.setAccessible(true);
-			UNSAFE = (Unsafe) theUnsafe.get(null);
-			BYTES_OFFSET = UNSAFE.arrayBaseOffset(byte[].class);
-		} catch (Exception e) {
-			throw new AssertionError(e);
-		}
-	}
-	
-	/**
-	 * @param position
-	 * @return
-	 */
-	public long getLong(long position) {
-		// TODO Auto-generated method stub
-		return this.UNSAFE.getLong(position);
-	}
-	
-	/**
-	 * @param position
-	 * @return
-	 */
-	public int getInt(long position) {
-		// TODO Auto-generated method stub
-		return this.UNSAFE.getInt(position);
-	}
-	/**
-	 * @param position
-	 * @return
-	 */
-	public byte getByte(long position) {
-		// TODO Auto-generated method stub
-		return this.UNSAFE.getByte(position);
-	}
-	/**
-	 * @param position
-	 * @return
-	 */
-	public byte[] getBytes(long position, int length) {
-		// TODO Auto-generated method stub
-		byte[] b = new byte[length];
-  		for(int i=0;i<length;i++){  
-  			b[i]=getByte(i+position);
-  		}
-		return b;
-	}
-	
-	/**
-	 * @param b
-	 * @param position
-	 */
-	public void writeBytes(byte[] b, long position) {
-		// TODO Auto-generated method stub
-		this.UNSAFE.copyMemory(b, BYTES_OFFSET, null, position, b.length);
-	}
-	
-	/**
-	 * @param b
-	 * @param position
-	 */
-	public void copyBytes(long position0, int length, long position1) {
-		// TODO Auto-generated method stub
-		byte[] b = getBytes(position0, length);
-		this.UNSAFE.copyMemory(b, BYTES_OFFSET, null, position1, b.length);
-	}
-	
-	public void copyBytes(byte[] b, long position){
-		this.UNSAFE.copyMemory(b, BYTES_OFFSET, null, position, b.length);
-	}
+//	private final  Unsafe UNSAFE;
+//	private long BYTES_OFFSET;
+//
+//	/**
+//	 * 
+//	 */
+//	public MemoryTool(){
+//		// TODO Auto-generated constructor stub
+//		try {
+//			@SuppressWarnings("all")
+//			Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+//			theUnsafe.setAccessible(true);
+//			UNSAFE = (Unsafe) theUnsafe.get(null);
+//			BYTES_OFFSET = UNSAFE.arrayBaseOffset(byte[].class);
+//		} catch (Exception e) {
+//			throw new AssertionError(e);
+//		}
+//	}
+//	
+//	/**
+//	 * @param position
+//	 * @return
+//	 */
+//	public long getLong(long position) {
+//		// TODO Auto-generated method stub
+//		return this.UNSAFE.getLong(position);
+//	}
+//	
+//	/**
+//	 * @param position
+//	 * @return
+//	 */
+//	public int getInt(long position) {
+//		// TODO Auto-generated method stub
+//		return this.UNSAFE.getInt(position);
+//	}
+//	/**
+//	 * @param position
+//	 * @return
+//	 */
+//	public byte getByte(long position) {
+//		// TODO Auto-generated method stub
+//		return this.UNSAFE.getByte(position);
+//	}
+//	/**
+//	 * @param position
+//	 * @return
+//	 */
+//	public byte[] getBytes(long position, int length) {
+//		// TODO Auto-generated method stub
+//		byte[] b = new byte[length];
+//  		for(int i=0;i<length;i++){  
+//  			b[i]=getByte(i+position);
+//  		}
+//		return b;
+//	}
+//	
+//	/**
+//	 * @param b
+//	 * @param position
+//	 */
+//	public void writeBytes(byte[] b, long position) {
+//		// TODO Auto-generated method stub
+//		this.UNSAFE.copyMemory(b, BYTES_OFFSET, null, position, b.length);
+//	}
+//	
+//	/**
+//	 * @param b
+//	 * @param position
+//	 */
+//	public void copyBytes(long position0, int length, long position1) {
+//		// TODO Auto-generated method stub
+//		byte[] b = getBytes(position0, length);
+//		this.UNSAFE.copyMemory(b, BYTES_OFFSET, null, position1, b.length);
+//	}
+//	
+//	public void copyBytes(byte[] b, long position){
+//		this.UNSAFE.copyMemory(b, BYTES_OFFSET, null, position, b.length);
+//	}
 	
 	//allocate memory
-	public static synchronized ByteBuffer allocate(int capacity) {
-		ByteBuffer byteBuffer = null;
-		byteBuffer = ByteBuffer.allocateDirect(capacity);
+	public static synchronized DirectBuffer allocate(int capacity) {
+		DirectBuffer byteBuffer = null;
+		byteBuffer = (DirectBuffer) ByteBuffer.allocateDirect(capacity);
 		return byteBuffer;
 	}
 	//free memory
