@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.cffex.nogc.memory.NoGcByteBuffer;
 import com.cffex.nogc.memory.SegmentExcerpt;
@@ -18,8 +19,20 @@ import com.cffex.nogc.memory.utils.MemoryTool;
  */
 public class BufferExcerpt extends AbstractBufferExcerpt{
 	
-	private Buffer buffer;
-	protected SegmentExcerpt segmentExcerpt;
+	/**
+	 * 原子boolean类型，用来实现spinlock
+	 */
+	private AtomicBoolean lock;
+	
+	/**
+	 * spin lock的time_out时间，尝试10次
+	 */
+	private final int SPIN_LOCK_TIME_OUT = 10;
+	
+	/**
+	 * spin lock尝试时的sleep时间
+	 */
+	private final int SPIN_LOCK_SLEEP_TIME = 20;
 	
 	public BufferExcerpt(SegmentExcerpt segmentExcerpt,NoGcByteBuffer noGcByteBuffer){
 		super(segmentExcerpt, noGcByteBuffer);
@@ -31,21 +44,34 @@ public class BufferExcerpt extends AbstractBufferExcerpt{
 	 * @param length buffer长度的增量
 	 * @return 长度增加后，可用长度相对于buffer的偏移量
 	 */
-	private int updateLength(int length){
+	@Override
+	protected int updateLength(int length){
 		return buffer.updateLengthWithIncrement(length);
 	}
 	
-	private void append(BufferLog log,int startLength){
+	@Override
+	protected void append(BufferLog log,int startLength){
 		ByteBuffer byteBuffer = log.toBytebuffer();
 		buffer.writeBytes(byteBuffer.array(), startLength);
 	}
 	
-	private boolean lock(){
-		// TODO
-		do {
-            v = length.get();
-        }while (!length.compareAndSet(v, v + increment));
-		return false;
+	@Override
+	protected boolean lock(){
+		int time = 0;
+		while (!lock.compareAndSet(false, true) && time<SPIN_LOCK_TIME_OUT){
+			try {
+				Thread.sleep(SPIN_LOCK_SLEEP_TIME);	
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+			}
+			time++;
+        }
+		if (time<SPIN_LOCK_TIME_OUT && lock.get()== true) {
+			return true;
+		}else {
+			return false;
+		}
 	}
 	
 	/**
@@ -53,7 +79,8 @@ public class BufferExcerpt extends AbstractBufferExcerpt{
 	 * @param length 新增length长度的数据
 	 * @return true-->OK false --> need merge
 	 */
-	private boolean checkFreeSpace(int length){
+	@Override
+	protected boolean checkFreeSpace(int length){
 		int has = buffer.getLength();
 		int freeSpace = Buffer.CAPACITY - length - has;
 		if (freeSpace < Buffer.THRESHOLD) {
@@ -67,7 +94,8 @@ public class BufferExcerpt extends AbstractBufferExcerpt{
 	 * 将buffer区中的数据拷贝走，创建TempBuffer
 	 * @return TempBuffer
 	 */
-	private TempBuffer swapDataAndMarkFree(){
+	@Override
+	protected TempBuffer swapDataAndMarkFree(){
 		int length = buffer.getLength();
 		ByteBuffer byteBuffer = ByteBuffer.allocate(length).order(ByteOrder.LITTLE_ENDIAN);
 		long bufferStartAddress = segmentExcerpt.getPositonByOffset(buffer.getOffsetByLength(0));
@@ -79,9 +107,9 @@ public class BufferExcerpt extends AbstractBufferExcerpt{
 		return new TempBuffer(byteBuffer,segmentExcerpt);
 	}
 	
-	private boolean unlock(){
-		// TODO
-		return false;
+	@Override
+	protected void unlock(){
+		lock.compareAndSet(true, false);
 	}
 	
 	/**
@@ -89,7 +117,8 @@ public class BufferExcerpt extends AbstractBufferExcerpt{
 	 * @param length 新增数据的长度，用于进行检测
 	 * @return 
 	 */
-	private void checkMerge(int length){
+	@Override
+	protected void checkMerge(int length){
 		boolean check = checkFreeSpace(length);
 		//检索结果为false，进行merge
 		if (!check) {
