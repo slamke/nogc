@@ -34,11 +34,11 @@ public class DataExcerpt implements DataOperateable{
 		this.segmentExcerpt = segmentExcerpt;
 		this.data = data;
 	}
-	public DataExcerpt(SegmentExcerpt segmentExcerpt){
+	public DataExcerpt(SegmentExcerpt segmentExcerpt, NoGcByteBuffer nogcData){
 		this.segmentExcerpt = segmentExcerpt;
 		int capacity = Segment.DEFAULT_CAPACITY - Buffer.CAPACITY;
-		NoGcByteBuffer noGcData = new NoGcByteBuffer(Buffer.CAPACITY, capacity, segmentExcerpt.getSegment().getByteBuffer());
-		this.data = new Data(capacity, capacity, 0, 0, 0,noGcData);
+		//NoGcByteBuffer noGcData = new NoGcByteBuffer(Buffer.CAPACITY, capacity, segmentExcerpt.getSegment().getByteBuffer());
+		this.data = new Data(capacity, capacity, 0, 0, 0,nogcData);
 	}
 	public Data getData() {
 		return data;
@@ -156,7 +156,7 @@ public class DataExcerpt implements DataOperateable{
 		int newCapacity = (int) (data.getCapacity()*Segment.DEFAULT_REACTOR);
 		int newFreeSpace = newCapacity - (this.data.getCapacity()-this.data.getFreesapce());
 		Segment newSegment = new Segment(newCapacity);
-		SegmentExcerpt newsegmentExcerpt = new SegmentExcerpt(IsolationType.RESTRICT,newSegment);
+		SegmentExcerpt newsegmentExcerpt = new SegmentExcerpt(IsolationType.RESTRICT);
 		NoGcByteBuffer newNoGcData = new NoGcByteBuffer(Buffer.CAPACITY, newCapacity, newsegmentExcerpt.getSegment().getByteBuffer());
 		
 		Data newData = new Data(newCapacity, newFreeSpace, this.data.getMaxId(), this.data.getMinId(), this.data.getCount(),newNoGcData);
@@ -204,7 +204,7 @@ public class DataExcerpt implements DataOperateable{
 	
 	//implements DataOperateable
 	@Override
-	public int insertDataWithIdRange(byte[] bdata, byte[] index, long minId, long maxId) {
+	public int insertDataWithIdRange(byte[] newData, byte[] newIndex, long minId, long maxId) {
 		// TODO Auto-generated method stub
 		if(minId<this.data.getMinId()){
 			this.data.setMinId(minId);
@@ -215,7 +215,6 @@ public class DataExcerpt implements DataOperateable{
 		int indexStartOffset = this.data.getIndexStartOffset();//index 开始的offset
 		int minIndexOffset = findIdOffset(minId);//找到最小id的index offset
 		int maxIndexOffset = findIdOffset(maxId);//找到最大id的index offset
-
 		/*
 		 * insert into data
 		 */
@@ -223,23 +222,27 @@ public class DataExcerpt implements DataOperateable{
 		int maxDataStartOffset = this.data.getInt(maxIndexOffset-12);//最大id的data offset
 		//最后一个data结束的位置 = data offset+cson length(4) + length
 		int DataEndOffset = this.data.getInt(indexStartOffset)+4+this.data.getInt(this.data.getInt(indexStartOffset));
-		byte[] tempData = this.data.getBytes(maxDataStartOffset, DataEndOffset-maxDataStartOffset+1);
-		int length
+		int length = DataEndOffset-maxDataStartOffset+1;
+		int newMaxDataStartOffset = minDataStartOffset + newData.length;
 		//搬移大于maxid的块tempData
-		this.data.copyBytes(maxDataStartOffset, length, offset1)
-		this.data.copyData(tempdata, minDataStartOffset+data.length);
+		this.data.copyBytes(maxDataStartOffset, length, newMaxDataStartOffset);
+		//写入newdata
+		this.data.putBytes(newData, minDataStartOffset);
+
 		/*
 		 * insert into index
 		 */
 		//获取要搬移的index数据
+		//this.data.copyBytes(indexStartOffset, maxIndexOffset - indexStartOffset, indexStartOffset-newindex.length);
 		byte[] tempIndex = this.data.getBytes(indexStartOffset, maxIndexOffset - indexStartOffset);
 		//index区数据要更新，offset值重新设置 现在data的长度-原来data的长度
-		int addOffset = b.length-(getInt(maxIndexOffset-12)-getInt(minIndexOffset-12));
+		int addOffset = newData.length-(this.data.getInt(maxIndexOffset-12)-this.data.getInt(minIndexOffset-12));
 		tempIndex = updateIndex(tempIndex, addOffset);
 		//移动index区数据
-		copyData(tempIndex, indexStartOffset-(index.length-(maxIndexOffset-minIndexOffset)));
+		this.data.putBytes(tempIndex, indexStartOffset-(newIndex.length-(maxIndexOffset-minIndexOffset)));
+		//copyData(tempIndex, indexStartOffset-(index.length-(maxIndexOffset-minIndexOffset)));
 		//写入新的index
-		writeData(index, minIndexOffset+index.length);
+		this.data.putBytes(newIndex,minIndexOffset+newIndex.length);
 		return 0;
 	}
 

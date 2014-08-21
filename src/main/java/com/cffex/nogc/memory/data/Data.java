@@ -18,7 +18,7 @@ public class Data {
 	public static int OFFSET  = 128*1024;
 	
 	//
-	private NoGcByteBuffer noGcData;
+	private NoGcByteBuffer nogcData;
 	private int freespace;
 	private int capacity;
 	
@@ -28,13 +28,13 @@ public class Data {
 	private int count;
 	
 	
-	protected Data(int capacity, int freespace, long maxId, long minId, int count,NoGcByteBuffer noGcData){
+	protected Data(int capacity, int freespace, long maxId, long minId, int count,NoGcByteBuffer nogcData){
 		this.capacity = capacity;
 		this.freespace = freespace;
 		this.maxId = maxId;
 		this.minId = minId;
 		this.count = count;
-		this.noGcData = noGcData;
+		this.nogcData = nogcData;
 	}
 	//
 	protected int updateMetaData(){
@@ -99,24 +99,24 @@ public class Data {
 
 	//read bytes
 	protected byte[] getBytes(int length){
-		return noGcData.getBytes(length);
+		return nogcData.getBytes(length);
 	}
 	protected byte[] getBytes(int offset, int length){
-		return noGcData.getBytes(offset, length);
+		return nogcData.getBytes(offset, length);
 	}
 
 	
 	//write bytes;
 	protected int copyBytes( int offset0, int length, int offset1){
-		noGcData.copyBytes(offset0, length, offset1);
+		nogcData.copyBytes(offset0, length, offset1);
 		return 1;
 	}
 	protected int putBytes(byte[] b, int offset){
-		noGcData.putBytes(offset, b);
+		nogcData.putBytes(offset, b);
 		return 1;
 	}
 	protected int putBytes(byte[] b){
-		noGcData.putBytes( b);
+		nogcData.putBytes( b);
 		return 1;
 	}
 	
@@ -125,49 +125,49 @@ public class Data {
 	
 	//read byte
 	protected byte getByte(){
-		return noGcData.get();
+		return nogcData.get();
 	}
 	protected byte geByte(int offset){
-		return noGcData.get(offset);
+		return nogcData.get(offset);
 	}
 	//write byte
 	protected void putByte(byte b){
-		noGcData.put(b);
+		nogcData.put(b);
 	}
 	protected void putByte(int offset, byte b){
-		noGcData.put(offset, b);
+		nogcData.put(offset, b);
 	}
 	
 	//read long
 	protected long getLong(){
-		return noGcData.getLong();
+		return nogcData.getLong();
 	}
 	protected long getLong(int offset){
-		return noGcData.getLong(offset);
+		return nogcData.getLong(offset);
   		
 	}
 	//write long
 	protected void putLong(long value){
-		noGcData.putLong(value);
+		nogcData.putLong(value);
 	}
 	protected void putLong(int offset, long value){
-		noGcData.putLong(offset, value);
+		nogcData.putLong(offset, value);
 	}
 	
 	//read int
 	protected int getInt(int offset){
-		return noGcData.getInt(offset);
+		return nogcData.getInt(offset);
 	}
 	protected int getInt(){
-		return noGcData.getInt();
+		return nogcData.getInt();
 	}
 	
 	//write int
 	protected void putInt(int value){
-		noGcData.putInt(value);
+		nogcData.putInt(value);
 	}
 	protected void putInt(Integer offset, int value){
-		noGcData.putInt(offset, value);
+		nogcData.putInt(offset, value);
 	}
 
 	protected int getDataStartOffset(){
