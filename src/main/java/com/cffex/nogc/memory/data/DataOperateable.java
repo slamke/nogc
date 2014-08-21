@@ -1,4 +1,7 @@
 package com.cffex.nogc.memory.data;
+
+import com.cffex.nogc.memory.SegmentExcerpt;
+
 /**
  * @author Tao Zhou
  * @ClassName DataOperateable
@@ -25,4 +28,6 @@ public interface DataOperateable {
 	 */
 	int insertDataWithIdRange(byte[] data, byte[] index, long minId,
 			long maxId);
+	int insertData(byte[] data, byte[] index, boolean readonly);
+	SegmentExcerpt resize();
 }

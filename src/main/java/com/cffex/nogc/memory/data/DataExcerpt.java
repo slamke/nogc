@@ -18,27 +18,18 @@ import com.cffex.nogc.memory.buffer.Buffer;
 import com.cffex.nogc.memory.utils.MemoryTool;
 import com.sun.beans.editors.ByteEditor;
 
-public class DataExcerpt implements DataOperateable{
+public class DataExcerpt extends AbstractDataExcerpt{
 
 	//private region
-	private Data data;
 	
-
-	private SegmentExcerpt segmentExcerpt;
-	
-	public DataExcerpt(){
-		
-	}
 	
 	public DataExcerpt(SegmentExcerpt segmentExcerpt, Data data){
-		this.segmentExcerpt = segmentExcerpt;
-		this.data = data;
+		super(segmentExcerpt, data);
+
 	}
 	public DataExcerpt(SegmentExcerpt segmentExcerpt, NoGcByteBuffer nogcData){
-		this.segmentExcerpt = segmentExcerpt;
-		int capacity = Segment.DEFAULT_CAPACITY - Buffer.CAPACITY;
-		//NoGcByteBuffer noGcData = new NoGcByteBuffer(Buffer.CAPACITY, capacity, segmentExcerpt.getSegment().getByteBuffer());
-		this.data = new Data(capacity, capacity, 0, 0, 0,nogcData);
+		super(segmentExcerpt, nogcData);
+
 	}
 	public Data getData() {
 		return data;
@@ -58,7 +49,7 @@ public class DataExcerpt implements DataOperateable{
 	 * @param id 查找的id
 	 * @return offset的值
 	 */
-	private int getOffsetById(long id) {
+	protected int getOffsetById(long id) {
 		int offset = binarySearchById(id);
 		if(offset < 0){
 			return -1;
@@ -73,7 +64,7 @@ public class DataExcerpt implements DataOperateable{
 	 * index(id+offset)
 	 * 找到index中id对应offset的位置
 	 */
-	private int binarySearchById(long id){
+	protected int binarySearchById(long id){
 		
 		if(data.getCount() == 0|| id < data.getMinId() || id > data.getMaxId()){
 			return -1;
@@ -99,7 +90,7 @@ public class DataExcerpt implements DataOperateable{
 	/*
 	 * 找到id插入的合适位置
 	 */
-	private int findIdOffset(long id){
+	protected int findIdOffset(long id){
 		if(data.getCount() == 0){
 			return this.data.getIndexEndOffset();
 		}else{
@@ -127,7 +118,7 @@ public class DataExcerpt implements DataOperateable{
 	}
 
 	//object数组id,index,id,index
-	private Object[] GetIndexRegion(long minid, long maxid){
+	protected Object[] GetIndexRegion(long minid, long maxid){
 		
 		int offset1 = findIdOffset(minid);
 		int offset2 = findIdOffset(maxid);
@@ -139,11 +130,11 @@ public class DataExcerpt implements DataOperateable{
 		}
 		return result;
 	}
-	private int setIndexRegion(){
+	protected int setIndexRegion(){
 		return 0;
 	}
 	@SuppressWarnings("unused")
-	private int checkFreeSpace(){
+	protected int checkFreeSpace(){
 		if(data.getFreesapce() < Data.THRESHOLD){
 			return 0;
 		}else{
@@ -151,7 +142,7 @@ public class DataExcerpt implements DataOperateable{
 		}
 	}
 	
-	private SegmentExcerpt resize(){
+	protected SegmentExcerpt resizeData(){
 		
 		int newCapacity = (int) (data.getCapacity()*Segment.DEFAULT_REACTOR);
 		int newFreeSpace = newCapacity - (this.data.getCapacity()-this.data.getFreesapce());
@@ -202,9 +193,8 @@ public class DataExcerpt implements DataOperateable{
 	
 	
 	
-	//implements DataOperateable
-	@Override
-	public int insertDataWithIdRange(byte[] newData, byte[] newIndex, long minId, long maxId) {
+
+	protected int insertDataWithIdRangexxx(byte[] newData, byte[] newIndex, long minId, long maxId) {
 		// TODO Auto-generated method stub
 		if(minId<this.data.getMinId()){
 			this.data.setMinId(minId);
@@ -246,14 +236,10 @@ public class DataExcerpt implements DataOperateable{
 		return 0;
 	}
 
-	@Override
-	public int tryReadLock() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 
-	@Override
-	public byte[] getById(long id) {
+
+
+	protected byte[] getDataById(long id) {
 		// TODO Auto-generated method stub
 		int offset = getOffsetById(id);
 		if(offset < 0){
@@ -263,20 +249,10 @@ public class DataExcerpt implements DataOperateable{
 		}
 	}
 
-	@Override
-	public int tryWriteLock() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 
-	@Override
-	public int unlockWriteLock() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 
-	@Override
-	public byte[] getDataWithIdRange(long minId, long maxId) {
+
+	protected byte[] getDataWithIdRangexxx(long minId, long maxId) {
 		// TODO Auto-generated method stub
 		int minIndexOffset = findIdOffset(minId);//找到最小id的index offset
 		int maxIndexOffset = findIdOffset(maxId);//找到最大id的index offset
@@ -287,6 +263,8 @@ public class DataExcerpt implements DataOperateable{
 		byte[] result = this.data.getBytes(minDataStartOffset, maxDataEndOffset - minDataStartOffset+1);
 		return result;
 	}
+
+
 	
 	
 
