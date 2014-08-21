@@ -120,7 +120,7 @@ public class SegmentExcerpt implements SegmentOperateable {
 	private byte[] mergeDataWithOperation(){
 		return null;
 	}
-	
+
 	public void setReadonly(boolean readonly){
 		segment.setReadonly(readonly);
 	}

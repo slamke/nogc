@@ -9,6 +9,7 @@
 		<accessrules>
 			<accessrule kind="accessible" pattern="sun/**"/>
 			<accessrule kind="accessible" pattern="com/sun/**"/>
+			<accessrule kind="accessible" pattern="java/nio/**"/>
 		</accessrules>
 	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
