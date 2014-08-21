@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
-import sun.misc.Unsafe;
 import sun.nio.ch.DirectBuffer;
 
 /**

@@ -1,7 +1,6 @@
 package com.cffex.nogc.memory;
 
 import com.cffex.nogc.enumeration.IsolationType;
-import com.cffex.nogc.memory.SegmentOperateable;
 import com.cffex.nogc.memory.buffer.BufferExcerpt;
 import com.cffex.nogc.memory.buffer.BufferOperatable;
 import com.cffex.nogc.memory.data.DataExcerpt;
@@ -122,7 +121,10 @@ public class SegmentExcerpt implements SegmentOperateable {
 		return null;
 	}
 	
-	public long getPositonByOffset(int offset){
-		return segment.getStartAddress()+offset;
+	public void setReadonly(boolean readonly){
+		segment.setReadonly(readonly);
+	}
+	public boolean isReadonly() {
+		return segment.isReadonly();
 	}
 }
