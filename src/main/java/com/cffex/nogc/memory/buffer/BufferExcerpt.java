@@ -5,9 +5,9 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.cffex.nogc.memory.NoGcByteBuffer;
 import com.cffex.nogc.memory.SegmentExcerpt;
 import com.cffex.nogc.memory.buffer.BufferLog.BufferLogCusor;
-import com.cffex.nogc.memory.buffer.BufferLog.BufferLogType;
 import com.cffex.nogc.memory.buffer.exception.BufferLogException;
 import com.cffex.nogc.memory.utils.MemoryTool;
 
@@ -16,91 +16,15 @@ import com.cffex.nogc.memory.utils.MemoryTool;
  * @ClassName BufferExcerpt
  * @Description: buffer操作接口的真实实现类， 包含了具体的底层操作原语
  */
-public class BufferExcerpt implements BufferOperatable{
+public class BufferExcerpt extends AbstractBufferExcerpt{
 	
 	private Buffer buffer;
 	protected SegmentExcerpt segmentExcerpt;
 	
-	public BufferExcerpt(SegmentExcerpt segmentExcerpt){
-		this.buffer = new Buffer();
-		this.segmentExcerpt = segmentExcerpt;
+	public BufferExcerpt(SegmentExcerpt segmentExcerpt,NoGcByteBuffer noGcByteBuffer){
+		super(segmentExcerpt, noGcByteBuffer);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.buffer.BufferOperatable#appendOperation(com.cffex.nogc.memory.buffer.BufferLog)
-	 */
-	@Override
-	public final boolean appendOperation(BufferLog log) {
-		try {
-			int length = log.getLength();
-			int startPoint = updateLength(length);
-			append(log,startPoint);
-			return true;
-		} catch (BufferLogException e) {
-			e.printStackTrace();
-			return false;
-		}finally{
-			unlock();
-		}
-	}
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.buffer.BufferOperatable#tryLockWithLength(int)
-	 */
-	@Override
-	public final boolean tryLockWithLength(int length) {
-		boolean lockResult = lock();
-		if (lockResult) {
-			checkMerge(length);
-		}
-		return lockResult;
-	}
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.buffer.BufferOperatable#getById(long)
-	 */
-	@Override
-	public final List<BufferLog> getById(long id) {
-		// TODO Auto-generated method stub
-		int length = buffer.getLength();
-		int offset = buffer.getOffsetByLength(0);
-		long position = segmentExcerpt.getPositonByOffset(offset);
-		BufferLogCusor cusor = new BufferLogCusor(position, length);
-		List<BufferLog> logs = new ArrayList<BufferLog>();	
-		while (cusor.hasNext()) {
-			BufferLog log = cusor.next(id);
-			if (log != null) {
-				logs.add(log);
-			}else {
-				break;
-			}
-		}
-		return logs;
-	}
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.buffer.BufferOperatable#getPropertyById(long, int)
-	 */
-	@Override
-	public final byte[] getPropertyById(long id, int index) {
-		// TODO Auto-generated method stub
-		int length = buffer.getLength();
-		int offset = buffer.getOffsetByLength(0);
-		long position = segmentExcerpt.getPositonByOffset(offset);
-		BufferLogCusor cusor = new BufferLogCusor(position, length);
-		List<BufferLog> logs = new ArrayList<BufferLog>();	
-		while (cusor.hasNext()) {
-			BufferLog log = cusor.next(id,index);
-			if (log != null) {
-				logs.add(log);
-			}else {
-				break;
-			}
-		}
-		//最后一条记录是最新的记录。
-		if (logs.size() >0) {
-			return logs.get(logs.size() -1).getValue();
-		}else {
-			return null;
-		}
-	}
 	
 	/**
 	 * 更新buffer的长度
@@ -113,13 +37,14 @@ public class BufferExcerpt implements BufferOperatable{
 	
 	private void append(BufferLog log,int startLength){
 		ByteBuffer byteBuffer = log.toBytebuffer();
-		int offset = buffer.getOffsetByLength(startLength);
-		long position = segmentExcerpt.getPositonByOffset(offset);
-		MemoryTool tool = new MemoryTool();
-		tool.writeBytes(byteBuffer.array(), position);
+		buffer.writeBytes(byteBuffer.array(), startLength);
 	}
+	
 	private boolean lock(){
 		// TODO
+		do {
+            v = length.get();
+        }while (!length.compareAndSet(v, v + increment));
 		return false;
 	}
 	

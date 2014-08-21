@@ -3,9 +3,8 @@ package com.cffex.nogc.memory.buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import com.cffex.nogc.memory.NoGcByteBuffer;
 import com.cffex.nogc.memory.buffer.exception.BufferLogException;
-import com.cffex.nogc.memory.utils.MemoryTool;
-import com.sun.org.apache.regexp.internal.recompile;
 
 /**
  * @author sunke
@@ -14,6 +13,9 @@ import com.sun.org.apache.regexp.internal.recompile;
  */
 public class BufferLog {
 	
+	public BufferLogType getFlag() {
+		return flag;
+	}
 	public static enum BufferLogType{
 		INSERT(0),
 		DELETE(1),
@@ -36,22 +38,12 @@ public class BufferLog {
 	}
 	
 	public static class BufferLogCusor{
-		private long position;
-		private int length;
-		private int current;
-		private MemoryTool tool;
-		public BufferLogCusor(long startPosition,int length){
-			this.position = startPosition;
-			this.length = length;
-			this.current = 0;
-			this.tool = new MemoryTool();
+		private NoGcByteBuffer cursor;
+		public BufferLogCusor(NoGcByteBuffer noGcByteBuffer){
+			this.cursor = noGcByteBuffer;
 		}
 		public boolean hasNext(){
-			if (current <length) {
-				return true;
-			}else {
-				return false;
-			}
+			return cursor.hasRemaining();
 		}
 		/**
 		 * 获取对应id的next log记录
@@ -60,22 +52,22 @@ public class BufferLog {
 		 */
 		public BufferLog next(long id){
 			if (hasNext()) {
-				byte flag = tool.getByte(getFlagPosition());
+				byte flag = cursor.get();
 				BufferLogType type = BufferLogType.getBufferLogType(flag);
-				long logId = tool.getLong(getIdPosition());
-				while (id != logId && current<length) {
+				long logId = cursor.getLong();
+				while (id != logId && hasNext()) {
 					try {
-						int dataLength = tool.getInt(getLengthPositon(type));
-						setCurrentPosition(dataLength, type);
+						int dataLength = getLength(type);
+						cursor.position(cursor.position()+dataLength);
 						continue;
 					} catch (Exception e) {
 						e.printStackTrace();
 						break;
 					}
 				}
-				if (id == logId && current<length) {
+				if (id == logId && hasNext()) {
 					try {
-						return getCurrentLog();
+						return getCurrentLog(logId,type);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -89,20 +81,21 @@ public class BufferLog {
 		/**
 		 * 获取对应id和propertyIndex的next log记录
 		 * @param id
+		 * @param propertyIndex
 		 * @return 对应id的next log记录
 		 */
 		public BufferLog next(long id,int propertyIndex){
 			if (hasNext()) {
-				byte flag = tool.getByte(getFlagPosition());
+				byte flag = cursor.get();
 				BufferLogType type = BufferLogType.getBufferLogType(flag);
-				long logId = tool.getLong(getIdPosition());
+				long logId = cursor.getLong();
 				try {
-					//短路与
+					//短路与,每个log，只读flag和id
 					while ((id != logId || type != BufferLogType.UPDATE_PROPERTY || 
-							tool.getInt(getIndexPositon(type)) != propertyIndex) &&  current<length) {
+							cursor.getInt(cursor.position()) != propertyIndex) &&  hasNext()) {
 						try {
-							int dataLength = tool.getInt(getLengthPositon(type));
-							setCurrentPosition(dataLength, type);
+							int dataLength = getLength(type);
+							cursor.position(cursor.position()+dataLength);
 							continue;
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -112,9 +105,10 @@ public class BufferLog {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				if (id == logId && type == BufferLogType.UPDATE_PROPERTY) {
+				if (id == logId && type == BufferLogType.UPDATE_PROPERTY &&
+						cursor.getInt(cursor.position()) == propertyIndex) {
 					try {
-						return getCurrentLog();
+						return getCurrentLog(logId,type);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -124,33 +118,27 @@ public class BufferLog {
 				return null;
 			}
 		}
-		private BufferLog getCurrentLog() throws Exception{
-			byte flag = tool.getByte(getFlagPosition());
-			BufferLogType type = BufferLogType.getBufferLogType(flag);
-			long logId = tool.getLong(getIdPosition());
+		private BufferLog getCurrentLog(long id,BufferLogType type) throws Exception{
 			BufferLog log = null;
 			switch(type){
 				case INSERT:
 				case UPDATE_ALL:
 					{
-						int dataLength = tool.getInt(getLengthPositon(type));
-						byte[] data = tool.getBytes(getDataPositon(type), dataLength);
-						log = new BufferLog(type, logId, data);
-						setCurrentPosition(dataLength, type);
+						int dataLength = cursor.getInt();
+						byte[] data = cursor.getBytes(dataLength);
+						log = new BufferLog(type, id, data);
 						return log;
 					}
 				case UPDATE_PROPERTY:
 					{
-						int index = tool.getInt(getIndexPositon(type));
-						int dataLength = tool.getInt(getLengthPositon(type));
-						byte[] data = tool.getBytes(getDataPositon(type), dataLength);
-						log =  new BufferLog(type, logId, data, index);
-						setCurrentPosition(dataLength, type);
+						int index = cursor.getInt();
+						int dataLength = cursor.getInt();
+						byte[] data = cursor.getBytes(dataLength);
+						log =  new BufferLog(type, id, data, index);
 						return log;
 					}
 				case DELETE:
-					setCurrentPosition(0, type);
-					return new BufferLog(type, logId, null);
+					return new BufferLog(type, id, null);
 				default:
 					throw new Exception("Buffer Type error");
 			}
@@ -162,53 +150,25 @@ public class BufferLog {
 		public BufferLog next(){
 			if (hasNext()) {
 				try {
-					return getCurrentLog();
+					byte flag = cursor.get();
+					BufferLogType type = BufferLogType.getBufferLogType(flag);
+					long logId = cursor.getLong();
+					return getCurrentLog(logId,type);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 			return null;
 		}
-		private long getFlagPosition(){
-			return current+position;
-		}
-		private long getIdPosition(){
-			return current+position+1;
-		}
-		private void setCurrentPosition(int dataLength,BufferLogType type){
+
+		private int getLength(BufferLogType type) throws Exception{
 			if (type == BufferLogType.UPDATE_PROPERTY) {
-				current = current+1+8+4+4+dataLength;
+				cursor.getInt();//index
+				return cursor.getInt();
 			}else if (type == BufferLogType.INSERT ||type == BufferLogType.UPDATE_ALL) {
-				current = current+1+8+4+dataLength;
-			}else if (type == BufferLogType.DELETE) {
-				current = current+1+8;
-			}
-		}
-		private long getLengthPositon(BufferLogType type) throws Exception{
-			if (type == BufferLogType.UPDATE_PROPERTY) {
-				return current+position+1+8+4;
-			}else if (type == BufferLogType.INSERT ||type == BufferLogType.UPDATE_ALL) {
-				return current+position+1+8;
+				return cursor.getInt();
 			}else {
-				throw new Exception("Delete log has no length data");
-			}
-		}
-		
-		private long getDataPositon(BufferLogType type) throws Exception{
-			if (type == BufferLogType.UPDATE_PROPERTY) {
-				return current+position+1+8+4+4;
-			}else if (type == BufferLogType.INSERT ||type == BufferLogType.UPDATE_ALL) {
-				return current+position+1+8+4;
-			}else {
-				throw new Exception("Delete log has no data");
-			}
-		}
-		
-		private long getIndexPositon(BufferLogType type)throws Exception{
-			if (type == BufferLogType.UPDATE_PROPERTY) {
-				return current+position+1+8;
-			}else {
-				throw new Exception("Only UPDATE_PROPERTY log has index data");
+				return 0;
 			}
 		}
 	}
@@ -327,8 +287,5 @@ public class BufferLog {
 		}
 		return null;
 	}
-
-	//public static BufferLog constructBufferLog(byte []){
-	//	return null;
-	//}  
+ 
 }

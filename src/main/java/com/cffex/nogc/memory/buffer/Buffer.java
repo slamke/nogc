@@ -1,6 +1,7 @@
 package com.cffex.nogc.memory.buffer;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import com.cffex.nogc.memory.NoGcByteBuffer;
+import com.cffex.nogc.memory.utils.PotentialProblem;
 
 /**
  * @author sunke
@@ -22,21 +23,27 @@ public class Buffer {
 	 */
 	public static final int CAPACITY = 128 * 1024;
 
+	/**
+	 * buffer区merge的count计数，读buffer前后进行modcount一致性检测
+	 */
+	@PotentialProblem(reason="防止线程读buffer的过程中，buffer区被merge，其读取的数据被覆盖掉，导致dirty data",
+			problem="")
 	private transient int modCount;
 	/**
-	 * 使用原子性的integer，用以支持spin lock
+	 * buffer区有效数据的长度
 	 */
-	private volatile AtomicInteger length;
+	private volatile int length;
 	
-	
+	private NoGcByteBuffer noGcByteBuffer;
 	
 	/**
 	 * 构造函数
 	 */
-	public Buffer() {
+	public Buffer(NoGcByteBuffer noGcByteBuffer) {
 		super();
-		this.length = new AtomicInteger(0);
+		this.length = 0;
 		this.modCount = 0;
+		this.noGcByteBuffer = noGcByteBuffer;
 	}
 
 	/**
@@ -45,10 +52,8 @@ public class Buffer {
 	 * @return 长度增加后，可以使用的buffer区空间的起始点
 	 */
 	public int updateLengthWithIncrement(int increment) {
-		int v = 0;
-        do {
-            v = length.get();
-        }while (!length.compareAndSet(v, v + increment));
+		int v = length;
+        length = length + v;
         return v;
 	}
 	
@@ -56,10 +61,8 @@ public class Buffer {
 	 * 释放buffer区，将buffer区长度置为0即可
 	 */
 	public void freeBuffer(){
-		int v = 0;
-        do {
-            v = length.get();
-        }while (!length.compareAndSet(v, 0));
+		length = 0;
+		modCount++;
 	}
 
 	/**
@@ -72,15 +75,23 @@ public class Buffer {
 
 
 
-	public void addModCount() {
+	/*public void addModCount() {
 		this.modCount++;
-	}
+	}*/
 
-	public int getOffsetByLength(int length) {
+	/*public int getOffsetByLength(int length) {
 		return OFFSET+length;
-	}
+	}*/
 
 	public int getLength() {
-		return length.get();
+		return length;
+	}
+	
+	public void writeBytes(byte[] value,int offset){
+		noGcByteBuffer.putBytes(offset, value);
+	}
+	
+	public NoGcByteBuffer getNoGcByteBuffer(){
+		return noGcByteBuffer.duplicate();
 	}
 }
