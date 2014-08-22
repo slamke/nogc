@@ -1,15 +1,12 @@
 package com.cffex.nogc.memory.buffer;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import sun.nio.ch.DirectBuffer;
 
 import com.cffex.nogc.memory.NoGcByteBuffer;
 import com.cffex.nogc.memory.SegmentExcerpt;
-import com.cffex.nogc.memory.buffer.BufferLog.BufferLogCusor;
-import com.cffex.nogc.memory.buffer.exception.BufferLogException;
 import com.cffex.nogc.memory.utils.MemoryTool;
 
 /**
@@ -36,6 +33,7 @@ public class BufferExcerpt extends AbstractBufferExcerpt{
 	
 	public BufferExcerpt(SegmentExcerpt segmentExcerpt,NoGcByteBuffer noGcByteBuffer){
 		super(segmentExcerpt, noGcByteBuffer);
+		lock = new AtomicBoolean(false);
 	}
 	
 	
@@ -97,14 +95,17 @@ public class BufferExcerpt extends AbstractBufferExcerpt{
 	@Override
 	protected TempBuffer swapDataAndMarkFree(){
 		int length = buffer.getLength();
-		ByteBuffer byteBuffer = ByteBuffer.allocate(length).order(ByteOrder.LITTLE_ENDIAN);
-		long bufferStartAddress = segmentExcerpt.getPositonByOffset(buffer.getOffsetByLength(0));
+		DirectBuffer directBuffer = MemoryTool.allocate(length);
+		NoGcByteBuffer temp = buffer.getNoGcByteBuffer();
+		temp.flip();
+		byte[] data = temp.getBytes(length);
 		//写入从buffer copy的数据
-		byteBuffer.put(new MemoryTool().getBytes(bufferStartAddress, length));
-		byteBuffer.flip();
+		NoGcByteBuffer newBuffer = new NoGcByteBuffer(0, length, directBuffer);
+		newBuffer.putBytes(data);
+		newBuffer.flip();
 		//释放buffer的空间
 		buffer.freeBuffer();
-		return new TempBuffer(byteBuffer,segmentExcerpt);
+		return new TempBuffer(newBuffer);
 	}
 	
 	@Override
@@ -123,7 +124,7 @@ public class BufferExcerpt extends AbstractBufferExcerpt{
 		//检索结果为false，进行merge
 		if (!check) {
 			TempBuffer tempBuffer = swapDataAndMarkFree();
-			MergeTaskQueue.putTask(tempBuffer);
+			MergeTaskQueue.putTask(new MergeTask(tempBuffer, segmentExcerpt));
 		}
 	}
 }

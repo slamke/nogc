@@ -140,4 +140,11 @@ public class SegmentExcerpt implements SegmentOperateable {
 	public boolean isReadonly() {
 		return segment.isReadonly();
 	}
+	public DataOperateable getDataOperateable(){
+		return null;
+	}
+	/**
+	 * TODO MERGE时，根据隔离级别设置lock
+	 */
+	public void mergeCallback(){}
 }
