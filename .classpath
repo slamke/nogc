@@ -13,5 +13,7 @@
 		</accessrules>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/scala-runtime"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/akka-mini"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

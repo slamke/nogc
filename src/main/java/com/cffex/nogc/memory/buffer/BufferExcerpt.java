@@ -124,7 +124,7 @@ public class BufferExcerpt extends AbstractBufferExcerpt{
 		//检索结果为false，进行merge
 		if (!check) {
 			TempBuffer tempBuffer = swapDataAndMarkFree();
-			MergeTaskQueue.putTask(new MergeTask(tempBuffer, segmentExcerpt));
+			MergeTaskSender.putTask(new MergeTask(tempBuffer, segmentExcerpt));
 		}
 	}
 }
