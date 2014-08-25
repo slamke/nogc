@@ -13,6 +13,10 @@ import com.cffex.nogc.memory.buffer.exception.BufferLogException;
  */
 public class BufferLog {
 	
+	public long getId() {
+		return id;
+	}
+
 	public BufferLogType getFlag() {
 		return flag;
 	}
@@ -176,11 +180,11 @@ public class BufferLog {
 	/**
 	 * log的类型：插入，删除，更新全部，更新属性
 	 */
-	private BufferLogType flag;
+	private final BufferLogType flag;
 	/**
 	 * log对应记录的id
 	 */
-	private long id;
+	private final long id;
 	/**
 	 * log的数据内容
 	 * 插入：item的整体数据
@@ -188,11 +192,11 @@ public class BufferLog {
 	 * 更新全部：item的整体数据
 	 * 更新属性：bytecode+data
 	 */
-	private byte[] value;
+	private final byte[] value;
 	/**
 	 * 更新属性时，属性的index索引
 	 */
-	private int index;
+	private final int index;
 	
 	/**	构造一个新的buffer log
 	 * @param flag log类型

@@ -34,7 +34,7 @@ public class Buffer {
 	 */
 	private volatile int length;
 	
-	private NoGcByteBuffer noGcByteBuffer;
+	protected NoGcByteBuffer noGcByteBuffer;
 	
 	/**
 	 * 构造函数
