@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 /**
  * @author sunke
  * @ClassName PotentialProblem
- * @Description: 目前设计可能存在的问题，尚没有解决的时候使用
+ * @Description: 目前设计可能存在的问题，尚没有解决的时候使用-->annotation
  */
 @Target({ElementType.METHOD,ElementType.FIELD})
 @Retention(RetentionPolicy.SOURCE)

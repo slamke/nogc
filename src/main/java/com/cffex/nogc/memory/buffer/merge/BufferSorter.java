@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.cffex.nogc.memory.buffer.TempBuffer;
-
 import akka.actor.UntypedActor;
 
 /**

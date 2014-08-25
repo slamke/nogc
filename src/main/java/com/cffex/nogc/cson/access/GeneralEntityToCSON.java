@@ -324,10 +324,6 @@ public class GeneralEntityToCSON {
     }
     }
     public static String binaryToString(byte[] b){
-//        StringBuilder s = new StringBuilder(b.length*2);
-//        for (int i =0;i<b.length;i++){
-//            s.append((b[i] & 0xff).formatted("%02x"));
-//        }
         try {
             return new String(  b , "ISO-8859-1" );
         }catch (Exception e){
@@ -338,65 +334,4 @@ public class GeneralEntityToCSON {
         return null;//val ret = if (bb!=null) bb else ByteBuffer.
     }
 
-//    /**
-//     * Created by sunke on 2014/7/31.
-//     */
-//    public static class CSONBuffer {
-//        private IEntityRandomAccess randomAccess;
-//        private ByteBuffer buffer;
-//
-//        public IEntityRandomAccess getRandomAccess() {
-//            return randomAccess;
-//        }
-//
-//        public void setRandomAccess(IEntityRandomAccess randomAccess) {
-//            this.randomAccess = randomAccess;
-//        }
-//
-//        public ByteBuffer getBuffer() {
-//            return buffer;
-//        }
-//
-//        public void setBuffer(ByteBuffer buffer) {
-//            this.buffer = buffer;
-//        }
-//
-//        public CSONBuffer(IEntityRandomAccess randomAccess, ByteBuffer buffer) {
-//            this.randomAccess = randomAccess;
-//            this.buffer = buffer;
-//        }
-//    }
-
-//    /**
-//     * Created by sunke on 2014/7/31.
-//     */
-//    public static class CSONBinary {
-//        private byte[] binary;
-//        private ByteBuffer buffer;
-//
-//        public byte[] getBinary() {
-//            return binary;
-//        }
-//
-//        public void setBinary(byte[] binary) {
-//            this.binary = binary;
-//        }
-//
-//        public ByteBuffer getBuffer() {
-//            return buffer;
-//        }
-//
-//        public void setBuffer(ByteBuffer buffer) {
-//            this.buffer = buffer;
-//        }
-//
-//        public CSONBinary(byte[] binary, ByteBuffer buffer) {
-//            this.binary = binary;
-//            this.buffer = buffer;
-//        }
-//
-//        public CSONBinary(){
-//            super();
-//        }
-//    }
 }

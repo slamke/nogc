@@ -7,6 +7,9 @@ import sun.nio.ch.DirectBuffer;
 
 import com.cffex.nogc.memory.NoGcByteBuffer;
 import com.cffex.nogc.memory.SegmentExcerpt;
+import com.cffex.nogc.memory.buffer.merge.MergeTask;
+import com.cffex.nogc.memory.buffer.merge.MergeTaskSender;
+import com.cffex.nogc.memory.buffer.merge.TempBuffer;
 import com.cffex.nogc.memory.utils.MemoryTool;
 
 /**

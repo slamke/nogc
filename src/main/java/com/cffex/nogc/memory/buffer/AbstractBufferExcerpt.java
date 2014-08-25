@@ -12,6 +12,7 @@ import com.cffex.nogc.memory.SegmentExcerpt;
 import com.cffex.nogc.memory.buffer.BufferLog.BufferLogCusor;
 import com.cffex.nogc.memory.buffer.BufferLog.BufferLogType;
 import com.cffex.nogc.memory.buffer.exception.BufferLogException;
+import com.cffex.nogc.memory.buffer.merge.TempBuffer;
 
 /**
  * @author sunke
