@@ -13,13 +13,6 @@ import com.cffex.nogc.memory.buffer.exception.BufferLogException;
  */
 public class BufferLog {
 	
-	public long getId() {
-		return id;
-	}
-
-	public BufferLogType getFlag() {
-		return flag;
-	}
 	public static enum BufferLogType{
 		INSERT(0),
 		DELETE(1),
@@ -229,7 +222,14 @@ public class BufferLog {
 	public byte[] getValue() {
 		return value;
 	}
+	
+	public long getId() {
+		return id;
+	}
 
+	public BufferLogType getFlag() {
+		return flag;
+	}
 	/**
 	 * 计算本log的长度
 	 * @return 长度值
