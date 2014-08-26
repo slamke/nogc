@@ -7,8 +7,10 @@ package com.cffex.nogc.cson.core.utils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import com.cffex.nogc.cson.access.EntitySchemaCache;
 import com.cffex.nogc.cson.access.EntitySerializerCache;
 import com.cffex.nogc.cson.access.GeneralEntityToCSON;
+import com.cffex.nogc.cson.core.CSONDocument;
 import com.cffex.nogc.cson.core.entityInterface.access.IEntityRandomAccess;
 import com.cffex.nogc.memory.NoGcByteBuffer;
 
@@ -49,6 +51,29 @@ public class CSONHelper {
 				.getEntityToCSON(clazz);
 		Object object = serializer.readCSONToObject(buffer);
 		return object;
+	}
+	
+	/**
+	 * 获取cson结构的第index个属性的值
+	 * @param byteBuffer
+	 * @param index
+	 * @param clazz
+	 * @return 属性的值
+	 */
+	public Object getPropertyByIndex(ByteBuffer byteBuffer, int index,Class<?> clazz) {
+		CSONDocument document = new CSONDocument(EntitySchemaCache.objectSchemaFactory(clazz), byteBuffer);
+		return document.getValue(index);
+	}
+	
+	/**获取cson结构的第index个属性的rawValue
+	 * @param byteBuffer
+	 * @param index
+	 * @param clazz
+	 * @return
+	 */
+	public byte[] getPropertyRawValueByIndex(ByteBuffer byteBuffer, int index,Class<?> clazz) {
+		CSONDocument document = new CSONDocument(EntitySchemaCache.objectSchemaFactory(clazz), byteBuffer);
+		return document.getRawValue(index);
 	}
 	
 	/**
