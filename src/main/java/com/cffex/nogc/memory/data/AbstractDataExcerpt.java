@@ -1,3 +1,4 @@
+
 /**
  *@author  Tao Zhou
 *@classname AbstractDataExcerpt.java
@@ -230,3 +231,4 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	
 	
 }
+

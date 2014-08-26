@@ -1,3 +1,4 @@
+
 /**
  *@author  Tao Zhou
 *@classname AbstractSegmentExcerpt.java
@@ -159,3 +160,4 @@ public abstract class AbstractSegmentExcerpt implements SegmentOperateable {
 	protected abstract byte[] mergeData(List<BufferLog> bufferList, byte[] dataValue, int index);
 	
 }
+
