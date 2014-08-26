@@ -15,9 +15,5 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/scala-runtime"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/akka-mini"/>
-	<classpathentry kind="lib" path="D:/CFFEX/workspace/nogc/src/main/resources/akka-actor_2.11-2.3.5.jar"/>
-	<classpathentry kind="lib" path="D:/CFFEX/workspace/nogc/src/main/resources/akka-testkit_2.11-2.3.5.jar"/>
-	<classpathentry kind="lib" path="D:/CFFEX/workspace/nogc/src/main/resources/config-1.2.1.jar"/>
-	<classpathentry kind="lib" path="D:/CFFEX/workspace/nogc/src/main/resources/scala-library-2.11.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
