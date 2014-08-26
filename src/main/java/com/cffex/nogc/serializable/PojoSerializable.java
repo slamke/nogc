@@ -23,7 +23,7 @@ public interface PojoSerializable {
 	/**
 	 * 将object序列化为cson数据
 	 * @param value object
-	 * @return 序列化后的ByteBuffer
+	 * @return 序列化后的ByteBuffer-->flip:postion set zero.
 	 */
 	public ByteBuffer writeObjectToByteBuffer(Object value);
 }

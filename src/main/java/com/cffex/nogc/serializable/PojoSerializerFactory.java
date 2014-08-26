@@ -17,7 +17,7 @@ public class PojoSerializerFactory {
 	private PojoSerializerFactory() {
 	}
 
-	public static PojoSerializable getpSerializer() {
+	public static PojoSerializable getSerializer() {
 		return new CSONPojoSerializer();
 	}
 	/**
@@ -25,7 +25,7 @@ public class PojoSerializerFactory {
 	 * @param type 序列化器的类型
 	 * @return 序列化器
 	 */
-	public static PojoSerializable getpSerializerByType(PojoSerializerType type) {
+	public static PojoSerializable getSerializerByType(PojoSerializerType type) {
 		switch (type) {
 		case CSON:
 			return new CSONPojoSerializer();

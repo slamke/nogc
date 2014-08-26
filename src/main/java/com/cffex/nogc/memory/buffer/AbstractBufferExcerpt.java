@@ -4,6 +4,7 @@
  */
 package com.cffex.nogc.memory.buffer;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,18 +41,16 @@ public abstract class AbstractBufferExcerpt implements BufferOperatable {
 	@Override
 	public final boolean appendOperation(BufferLog log) {
 		try {
-			int length = log.getLength();
+			ByteBuffer value = log.toBytebuffer();
+			int length = value.limit();
 			int startPoint = updateLength(length);
 			// 当有update时，segment状态变为非只读
 			if (log.getFlag() == BufferLogType.UPDATE_PROPERTY
 					|| log.getFlag() == BufferLogType.UPDATE_ALL) {
 				segmentExcerpt.setReadonly(false);
 			}
-			append(log, startPoint);
+			append(value, startPoint);
 			return true;
-		} catch (BufferLogException e) {
-			e.printStackTrace();
-			return false;
 		} finally {
 			unlock();
 		}
@@ -138,7 +137,7 @@ public abstract class AbstractBufferExcerpt implements BufferOperatable {
 	 */
 	abstract protected int updateLength(int length);
 
-	abstract protected void append(BufferLog log, int startLength);
+	abstract protected void append(ByteBuffer log, int startLength);
 
 	abstract protected boolean lock();
 

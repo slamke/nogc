@@ -10,21 +10,22 @@ import java.nio.ByteOrder;
 import com.cffex.nogc.cson.access.EntitySerializerCache;
 import com.cffex.nogc.cson.access.GeneralEntityToCSON;
 import com.cffex.nogc.cson.core.entityInterface.access.IEntityRandomAccess;
+import com.cffex.nogc.memory.NoGcByteBuffer;
 
 /**
  * @author sunke
  * @ClassName CSONSerializerTool
  * @Description: cson序列化的工具类，所有的序列化器使用 EntitySerializerCache进行缓存
  */
-public class CSONSerializerTool {
-	private CSONSerializerTool() {
+public class CSONHelper {
+	private CSONHelper() {
 	}
 
 	/**
 	 * 将object使用cson进行序列化，结果保存在比亚特buffer中
 	 * @param object 待序列化的object 
 	 * @param clazz object的clazz类型
-	 * @return 序列化的结果-->postion set zero.
+	 * @return 序列化的结果-->flip:postion set zero.
 	 */
 	public static ByteBuffer serializeObjectToCSON(Object object, Class<?> clazz) {
 		GeneralEntityToCSON serializer = EntitySerializerCache
@@ -33,7 +34,7 @@ public class CSONSerializerTool {
 				ByteOrder.LITTLE_ENDIAN);
 		Tuple<IEntityRandomAccess, ByteBuffer> buffer = serializer
 				.writeObjectToCSON(object, outBuffer);
-		buffer.second.rewind();
+		buffer.second.flip();
 		return buffer.second;
 	}
 
@@ -48,6 +49,20 @@ public class CSONSerializerTool {
 				.getEntityToCSON(clazz);
 		Object object = serializer.readCSONToObject(buffer);
 		return object;
+	}
+	
+	/**
+	 * 从noGcByteBuffer中读取一个cson，从当前位置开始
+	 * @param noGcByteBuffer 带读取的noGcByteBuffer
+	 * @return bytebuffer-->已经flip
+	 */
+	public static ByteBuffer getCSONFromNoGcByteBuffer(NoGcByteBuffer noGcByteBuffer){
+		int len = noGcByteBuffer.getInt();
+		ByteBuffer buffer = ByteBuffer.allocate(len+5).order(ByteOrder.LITTLE_ENDIAN);
+		buffer.putInt(len);
+		buffer.put(noGcByteBuffer.getBytes(len));
+		buffer.flip();
+		return buffer;
 	}
 	
 }

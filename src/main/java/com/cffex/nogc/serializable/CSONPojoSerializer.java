@@ -6,7 +6,7 @@ package com.cffex.nogc.serializable;
 
 import java.nio.ByteBuffer;
 
-import com.cffex.nogc.cson.core.utils.CSONSerializerTool;
+import com.cffex.nogc.cson.core.utils.CSONHelper;
 
 /**
  * @author sunke
@@ -21,7 +21,7 @@ public class CSONPojoSerializer implements PojoSerializable {
 	@Override
 	public Object readBinaryToObject(ByteBuffer value,Class<?> clazz) {
 		// TODO Auto-generated method stub
-		return CSONSerializerTool.readCSONToObject(value, clazz);
+		return CSONHelper.readCSONToObject(value, clazz);
 	}
 
 	/* (non-Javadoc)
@@ -30,7 +30,7 @@ public class CSONPojoSerializer implements PojoSerializable {
 	@Override
 	public ByteBuffer writeObjectToByteBuffer(Object value) {
 		// TODO Auto-generated method stub
-		return CSONSerializerTool.serializeObjectToCSON(value, value.getClass());
+		return CSONHelper.serializeObjectToCSON(value, value.getClass());
 	}
 
 }

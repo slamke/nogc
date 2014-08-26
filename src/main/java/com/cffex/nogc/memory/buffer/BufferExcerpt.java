@@ -51,9 +51,8 @@ public class BufferExcerpt extends AbstractBufferExcerpt{
 	}
 	
 	@Override
-	protected void append(BufferLog log,int startLength){
-		ByteBuffer byteBuffer = log.toBytebuffer();
-		buffer.writeBytes(byteBuffer.array(), startLength);
+	protected void append(ByteBuffer log,int startLength){
+		buffer.writeBytes(log.array(), startLength);
 	}
 	
 	@Override
