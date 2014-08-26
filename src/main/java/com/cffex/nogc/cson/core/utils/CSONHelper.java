@@ -60,7 +60,7 @@ public class CSONHelper {
 	 * @param clazz
 	 * @return 属性的值
 	 */
-	public Object getPropertyByIndex(ByteBuffer byteBuffer, int index,Class<?> clazz) {
+	public static Object getPropertyByIndex(ByteBuffer byteBuffer, int index,Class<?> clazz) {
 		CSONDocument document = new CSONDocument(EntitySchemaCache.objectSchemaFactory(clazz), byteBuffer);
 		return document.getValue(index);
 	}
@@ -71,7 +71,7 @@ public class CSONHelper {
 	 * @param clazz
 	 * @return
 	 */
-	public byte[] getPropertyRawValueByIndex(ByteBuffer byteBuffer, int index,Class<?> clazz) {
+	public static byte[] getPropertyRawValueByIndex(ByteBuffer byteBuffer, int index,Class<?> clazz) {
 		CSONDocument document = new CSONDocument(EntitySchemaCache.objectSchemaFactory(clazz), byteBuffer);
 		return document.getRawValue(index);
 	}
@@ -97,6 +97,18 @@ public class CSONHelper {
 		buffer.putInt(len);
 		buffer.put(noGcByteBuffer.getBytes(len));
 		buffer.flip();
+		return buffer;
+	}
+	
+	/**
+	 * 从ByteBuffer中读取一个cson，从当前位置开始
+	 * @param byteBuffer 待读取的byteBuffer
+	 * @return byte[]
+	 */
+	public static byte[] getCSONFromByteBuffer(ByteBuffer byteBuffer){
+		int len = byteBuffer.getInt(byteBuffer.position());
+		byte[] value = new byte[len+4];
+		byteBuffer.get(value);
 		return buffer;
 	}
 	

@@ -26,7 +26,7 @@ public interface SegmentOperateable {
 	 * @param id 待获取数据记录的id
 	 * @return 数据
 	 */
-	public byte[] getItem(long id);
+	public byte[] getItem(long id, String schemaKey);
 	
 	/**
 	 * 获取id对应的记录第index条property的数据
@@ -34,7 +34,7 @@ public interface SegmentOperateable {
 	 * @param index 待获取property的索引
 	 * @return	property的数据(typecode + data) 
 	 */
-	public byte[] getItemProperty(long id ,int index);
+	public byte[] getItemProperty(long id ,int index, String schemaKey);
 	/**
 	 * 更新段segment中的id对应的记录
 	 * @param id 记录的id
@@ -50,7 +50,7 @@ public interface SegmentOperateable {
 	 * @param newValue 记录的二进制新值
 	 * @return 是否成功更新的结果标识
 	 */
-	public boolean updateItemProperty(long id ,int index ,byte[] newValue);
+	public boolean updateItemProperty(long id ,int index ,byte[] newValue, String schemaKey);
 	
 	/**
 	 * 当段segment中没有记录时，释放整个段的内存

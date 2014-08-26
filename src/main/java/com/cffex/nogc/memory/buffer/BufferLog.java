@@ -8,7 +8,7 @@ import com.cffex.nogc.serializable.PojoSerializable;
 import com.cffex.nogc.serializable.PojoSerializerFactory;
 
 /**
- * @author sunke
+ * @author sunke TaoZhou
  * @ClassName BufferLog
  * @Description: buffer区中记录的log -->使用cson序列化后，保存在buffer区中
  */
@@ -169,7 +169,17 @@ public class BufferLog {
 	public byte[] getValue() {
 		return value;
 	}
-	
+
+	public byte[] getValue(int index) {
+		// TODO Auto-generated method stub
+		try {
+			return CSONHelper.getPropertyRawValueByIndex(toBytebuffer(), index, Class.forName(getSchemaKey()));
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
 	public long getId() {
 		return id;
 	}
@@ -213,4 +223,6 @@ public class BufferLog {
 		ByteBuffer byteBuffer = tool.writeObjectToByteBuffer(this);
 		return byteBuffer;
 	}
+
+
 }

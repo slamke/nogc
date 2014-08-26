@@ -35,6 +35,13 @@ public class TempBuffer extends Buffer{
 	 *insert bufferLog的list
 	 */
 	private final List<BufferLog> insertIndexList;
+	public List<BufferLog> getInsertIndexList() {
+		return insertIndexList;
+	}
+
+	public List<BufferLog> getUpdateIndexList() {
+		return updateIndexList;
+	}
 	/**
 	 * update/delete bufferLog的list
 	 */

@@ -1,3 +1,4 @@
+
 /**
  *@author  Tao Zhou
 *@classname AbstractDataExcerpt.java
@@ -136,28 +137,42 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	 * @see com.cffex.nogc.memory.data.DataOperateable#insertDataWithIdRange(byte[], byte[], long, long)
 	 */
 	@Override
-	public final int insertDataWithIdRange(byte[] data, byte[] index, long minId,
+	public final void insertDataWithIdRange(byte[] dataBytes, byte[] indexBytes, long minId,
 			long maxId) {
 		// TODO Auto-generated method stub
-		insertData(data, index, minId, maxId);
-		return 0;
+		insertData(dataBytes, indexBytes, minId, maxId);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.data.DataOperateable#insertDataWithIdRange(byte[], byte[], long, long)
+	 */
+	@Override
+	public final void insertDataWithIdRange(byte[] dataBytes, IndexItem[] indexItems, long minId,
+			long maxId) {
+		// TODO Auto-generated method stub
+		insertData(dataBytes, indexItems, minId, maxId);
 	}
 	
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.data.DataOperateable#insertData(byte[], byte[], boolean)
 	 */
 	@Override
-	public int insertData(byte[] newData, Object[] newIndex, long miId, long maxId, boolean readonly) {
+	public void insertData(byte[] dataBytes, IndexItem[] indexItems, long miId, long maxId, boolean readonly) {
 		// TODO Auto-generated method stub
 		if(readonly){
-			try {
-				insertData(newData, newIndex, miId, maxId);
-			} catch (DataException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			insertData(dataBytes, indexItems, miId, maxId);
 		}
-		return 0;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.data.DataOperateable#insertData(byte[], byte[], boolean)
+	 */
+	@Override
+	public void insertData(byte[] dataBytes,  byte[] indexBytes , long miId, long maxId, boolean readonly) {
+		// TODO Auto-generated method stub
+		if(readonly){
+			insertData(dataBytes, indexBytes, miId, maxId);
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -200,8 +215,8 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	protected abstract int setIndexRegion();
 	protected abstract int checkFreeSpace();
 	protected abstract SegmentExcerpt resizeData();
-	protected abstract int insertData(byte[] newData, byte[] newIndex, long minId, long maxId);
-	protected abstract int insertData(byte[] newData, Object[] newIndex, long miId, long maxId) throws DataException;
+	protected abstract void insertData(byte[] dataBytes, byte[] indexBytes, long minId, long maxId);
+	protected abstract void insertData(byte[] dataBytes, IndexItem[] indexItems, long minId, long maxId);
 	protected abstract byte[] getData0(long minId, long maxId);
 	protected abstract HashMap<Long, byte[]> getData(long minId, long maxId);
 //	protected abstract void lockRead();
@@ -216,3 +231,4 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	
 	
 }
+

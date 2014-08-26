@@ -1,5 +1,7 @@
 package com.cffex.nogc.memory.buffer.merge;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.List;
 
 import scala.concurrent.Await;
@@ -11,7 +13,11 @@ import akka.actor.UntypedActor;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 
+import com.cffex.nogc.memory.NoGcByteBuffer;
+import com.cffex.nogc.memory.buffer.Buffer;
+import com.cffex.nogc.memory.buffer.BufferLog;
 import com.cffex.nogc.memory.data.BlockData;
+import com.cffex.nogc.memory.data.IndexItem;
 
 public class Merger extends UntypedActor {
 
@@ -43,6 +49,24 @@ public class Merger extends UntypedActor {
         	
         	TempBuffer result = (TempBuffer) Await.result(buffer, timeout.duration());
         	BlockData blockData = (BlockData) Await.result(data, timeout.duration());
+        	
+        	int len = blockData.getDataBuffer().limit() + Buffer.CAPACITY;
+        	ByteBuffer newDataBuffer =  ByteBuffer.allocate(len).order(ByteOrder.LITTLE_ENDIAN);
+        	List<BufferLog> insertLogs = result.getInsertIndexList();
+        	List<IndexItem> indexItems = blockData.getOffsetList();
+        	ByteBuffer oldDataBuffer = blockData.getDataBuffer();
+        	
+        	for (BufferLog log : insertLogs) {
+        		int i = 0;
+				while (log.getId() > indexItems.get(i).getId()) {
+					
+					
+					newDataBuffer.put(b)
+					i++;
+					
+				}
+			}
+        	
         	
 		} catch (Exception e) {
 			// TODO: handle exception
