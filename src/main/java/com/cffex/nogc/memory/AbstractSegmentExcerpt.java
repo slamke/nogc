@@ -85,7 +85,7 @@ public abstract class AbstractSegmentExcerpt implements SegmentOperateable {
 			
 			boolean complete = isDataCompleteInBuffer(bufferList);
 			if(complete){
-				return mergeInBuffer(bufferList);	
+				return mergeInBuffer(id, bufferList, schemaKey);	
 			}else{
 				byte[] dataValue = getItemInData(id);
 				return mergeData(id, bufferList, dataValue, schemaKey);
@@ -151,7 +151,7 @@ public abstract class AbstractSegmentExcerpt implements SegmentOperateable {
 	
 	protected abstract boolean isDataPropertyCompleteInBuffer(List<BufferLog> bufferList, int index);
 		
-	protected abstract byte[] mergeInBuffer(List<BufferLog> bufferList);
+	protected abstract byte[] mergeInBuffer(long id, List<BufferLog> bufferList, String schemaKey);
 	
 	protected abstract byte[] mergeInBuffer(List<BufferLog> bufferList, int index, String schemaKey);
 	
