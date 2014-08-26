@@ -5,6 +5,8 @@ import java.util.List;
 
 import sun.nio.ch.DirectBuffer;
 
+import com.cffex.nogc.cson.core.utils.CSONMergeTool;
+import com.cffex.nogc.cson.core.utils.Tuple;
 import com.cffex.nogc.enumeration.IsolationType;
 import com.cffex.nogc.memory.buffer.Buffer;
 import com.cffex.nogc.memory.buffer.BufferExcerpt;
@@ -165,29 +167,32 @@ public class SegmentExcerpt extends AbstractSegmentExcerpt {
 	 * @see com.cffex.nogc.memory.AbstractSegmentExcerpt#mergeInBuffer(java.util.List)
 	 */
 	@Override
-	protected byte[] mergeInBuffer(List<BufferLog> bufferList) {
+	protected byte[] mergeInBuffer(long id, List<BufferLog> bufferList, String schemaKey) {
 		// TODO Auto-generated method stub
 		int i;
+		byte[] result = null;
 		for(i =  bufferList.size() - 1; i >= 0; i--){
 			if(bufferList.get(i).getFlag().equals(BufferLogType.DELETE)){
-				i = i+1;
-				break;
+				return null;
 			}else if(bufferList.get(i).getFlag().equals(BufferLogType.UPDATE_ALL)){
+				result = bufferList.get(i).getValue();
 				break;
 			}else if(bufferList.get(i).getFlag().equals(BufferLogType.INSERT)){
+				result = bufferList.get(i).getValue();
 				break;
 			}
 		}
 		if(i < bufferList.size()){
-			byte[] result = bufferList.get(i).getValue();
+			DataItem dataItem = new DataItem(id, result, schemaKey);
 			for(int j = i + 1; j < bufferList.size() - 1; j++){
-				result = mergeBufferlog(result, bufferList.get(j));
+				dataItem = mergeBufferlog(id, dataItem, bufferList.get(j), schemaKey);
 			}
-			return result;
+			return dataItem.getValue();
 		}else{
 			return null;
 		}
 	}
+
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.AbstractSegmentExcerpt#mergeData(byte[], byte[])
 	 */
@@ -197,16 +202,23 @@ public class SegmentExcerpt extends AbstractSegmentExcerpt {
 		//不完整的情况下，bufferlog的flag应该都是BufferLogType.UPDATE_PROPERTY
 		DataItem dataItem = new DataItem(id, dataValue, schemaKey);
 		for(int i = 0; i<bufferList.size() - 1; i++){
-			dataValue = mergeBufferlog(dataValue,bufferList.get(i));
+			dataItem = mergeBufferlog(id, dataItem,bufferList.get(i),schemaKey);
 		}
-		return dataValue;
+		return dataItem.getValue();
 	}
-	private byte[] mergeBufferlog(byte[] bufferBytes, BufferLog bufferLog){
+	private DataItem mergeBufferlog(long id, DataItem dataItem, BufferLog bufferLog,String schemaKey){
 		//只会再出现UPDATE_PROPERTY操作
 		int index= bufferLog.getIndex();//找到需要更新的index
 		byte[] value = bufferLog.getValue();//找到需要更新的value
 			//todo：在bufferBytes中更新index值为value
-		return bufferBytes;
+		Tuple updateOperation = new Tuple(index,value);
+		try {
+			CSONMergeTool.merge(Class.forName(schemaKey), dataItem.toBytebuffer(), updateOperation);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return dataItem;
 		
 	}
 

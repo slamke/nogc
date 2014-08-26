@@ -107,8 +107,9 @@ public class TempBuffer extends Buffer{
 	/**
 	 * 对未处理的insertIndexList和updateIndexList进行排序和归并处理
 	 * @throws TempBufferException 
+	 * @throws IllegalBufferMergeException 
 	 */
-	public TempBuffer constructIndexList() throws TempBufferException{
+	public TempBuffer constructIndexList() throws TempBufferException, IllegalBufferMergeException{
 		if (!isReady()) {
 			throw new TempBufferException("Invoke the preperation() method first and get the return value to invoke this method.");
 		}
@@ -203,7 +204,9 @@ public class TempBuffer extends Buffer{
 						BufferLog insert = insertList.get(0);
 						ByteBuffer bb = ByteBuffer.wrap(insert.getValue()).order(ByteOrder.LITTLE_ENDIAN);
 						ByteBuffer content = CSONMergeTool.merge(Class.forName(bufferLog.getSchemaKey()), bb, new Tuple<Integer, byte[]>(bufferLog.getIndex(), bufferLog.getValue()));
-						insert.setValue(content.get);
+						byte[] value = new byte[content.limit()];
+						content.get(value);
+						insert.setValue(value);
 					} catch (ClassNotFoundException e) {
 						// TODO: handle exception
 						e.printStackTrace();
@@ -211,6 +214,6 @@ public class TempBuffer extends Buffer{
 				}
 			}
 		}
-		return null;
+		return insertList;
 	}
 }

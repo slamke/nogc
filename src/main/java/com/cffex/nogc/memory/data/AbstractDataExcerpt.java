@@ -127,7 +127,7 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	 * @see com.cffex.nogc.memory.data.DataOperateable#getDataWithIdRange(long, long)
 	 */
 	@Override
-	public final HashMap<Long, byte[]> getDataWithIdRange(long minId, long maxId) {
+	public final BlockData getDataWithIdRange(long minId, long maxId) {
 		// TODO Auto-generated method stub
 		return getData(minId, maxId);
 

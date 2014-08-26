@@ -193,7 +193,7 @@ public class DataExcerpt extends AbstractDataExcerpt{
 	}
 	
 	@Override
-	protected HashMap<Long, byte[]> getData(long minId, long maxId) {
+	protected BlockData getData(long minId, long maxId) {
 		// TODO Auto-generated method stub
 		int minIndexOffset = findIdOffset(minId);//找到最小id的index offset
 		int maxIndexOffset = findIdOffset(maxId);//找到最大id的index offset

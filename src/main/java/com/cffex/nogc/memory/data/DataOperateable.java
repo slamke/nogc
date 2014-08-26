@@ -1,11 +1,6 @@
 package com.cffex.nogc.memory.data;
 
-import java.util.HashMap;
-
-import sun.nio.ch.DirectBuffer;
-
 import com.cffex.nogc.memory.SegmentExcerpt;
-import com.sun.javafx.collections.MappingChange.Map;
 
 /**
  * @author Tao Zhou
@@ -52,7 +47,10 @@ public interface DataOperateable {
 	 */
 	public byte[] getDataWithIdRange0(long minId, long maxId);
 	
-	public HashMap<Long, byte[]> getDataWithIdRange(long minId, long maxId);
+
+	public BlockData getDataWithIdRange(long minId, long maxId);
+
+	//public HashMap<Long, byte[]> getDataWithIdRange(long minId, long maxId);
 	
 	//public DirectBuffer getDataWithIdRange();
 	
@@ -70,6 +68,10 @@ public interface DataOperateable {
 	 * @param minId 插入的最小id
 	 * @param maxId 插入的最大id
 	 */
+	public int insertDataWithIdRange(BlockData data, long minId,
+			long maxId);
+	public int insertData(byte[] newData, Object[] newIndex, long miId, long maxId, boolean readonly);
+
 	public void insertDataWithIdRange(byte[] dataBytes, byte[] indexBytes, long minId, long maxId);
 	/**
 	 * @param dataBytes 插入数据的byte数组
