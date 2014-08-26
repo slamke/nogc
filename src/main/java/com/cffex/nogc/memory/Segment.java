@@ -1,5 +1,7 @@
 package com.cffex.nogc.memory;
 
+import java.nio.ByteBuffer;
+
 import sun.nio.ch.DirectBuffer;
 
 import com.cffex.nogc.memory.utils.MemoryTool;
@@ -74,6 +76,10 @@ public class Segment {
 		//this.noGcData = new NoGcByteBuffer(Buffer.CAPACITY, capacity, (DirectBuffer)byteBuffer);
 	}
 
+	public void release(){
+		MemoryTool.free((ByteBuffer) this.byteBuffer);
+	}
+	
 	public DirectBuffer getByteBuffer() {
 		return byteBuffer;
 	}

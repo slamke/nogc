@@ -1,0 +1,67 @@
+/**
+ *@author  Tao Zhou
+*@classname DataTestSuite.java
+*@date 下午3:34:29
+*@description
+ */
+package com.cffex.nogc.memory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+
+import com.cffex.nogc.enumeration.IsolationType;
+import com.cffex.nogc.memory.data.DataExcerpt;
+import com.cffex.nogc.memory.data.DataOperateable;
+
+/**
+ * @author zhou
+ *
+ */
+public class DataTestSuite {
+	private void insertNewIndex(Object[] newIndex, int offset) {
+		// TODO Auto-generated method stub
+		byte[] b = new byte[newIndex.length*6];
+		System.out.println(newIndex.length);
+		byte[] intbyte = new byte[4];
+		byte[] longbyte = new byte[8];
+		for(int i = 0; i < newIndex.length/2; i++){
+			System.out.println(i);
+			try {
+				longbyte = getBytes(newIndex[i*2]);
+				intbyte = getBytes(newIndex[i*2+1]);
+				System.arraycopy(longbyte, 0, b, i*12, 4);
+				System.arraycopy(intbyte, 0, b, i*12+4, 8);
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+	}
+	private static byte[] getBytes(Object obj) throws IOException {  
+	        ByteArrayOutputStream bout = new ByteArrayOutputStream();  
+	        ObjectOutputStream out = new ObjectOutputStream(bout);  
+	        out.writeObject(obj);  
+	        out.flush();  
+	        byte[] bytes = bout.toByteArray();  
+	        bout.close();  
+	        out.close();  
+	        System.out.println(bytes.toString());
+	        return bytes;  
+	} 
+	public static void main(String[] args){
+//		DataTestSuite dts = new DataTestSuite();
+//		SegmentExcerpt se = new SegmentExcerpt(IsolationType.RESTRICT);
+//		DataOperateable de = se.getDataOperateable();
+//		Object[] testArrayObjects = {(long)1L,(int)11,(long)2L,(int)12,(long)3L,(int)13,(long)4L,(int)14} ;
+//		dts.insertNewIndex(testArrayObjects, 0);
+		
+		//de.insertData(newData, newIndex, miId, maxId, readonly)
+		
+		SegmentExcerpt segmentExcerpt = new SegmentExcerpt(IsolationType.RESTRICT);
+		segmentExcerpt.getSegment();
+		
+	}
+}
