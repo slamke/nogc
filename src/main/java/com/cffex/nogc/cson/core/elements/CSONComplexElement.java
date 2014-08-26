@@ -88,8 +88,8 @@ public class CSONComplexElement implements IEntityRandomAccess, IEntitySequenceA
         int i = getIndex(index);
         if (i < thisSchema.count()) {
             if (elementList.size()<=i || elementList.get(i) == null){
-                if (cursor != null) elementList.add(i,readElement(cursor,i));
-                else elementList.add(i,CSONElement.NullValue);
+                if (cursor != null) elementList.set(i,readElement(cursor,i));
+                else elementList.set(i,CSONElement.NullValue);
             }
             return elementList.get(i);
         }else throw new IllegalArgumentException();

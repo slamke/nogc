@@ -1,6 +1,7 @@
 package com.cffex.nogc.cson.access;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.cffex.nogc.cson.core.entityInterface.common.IElementType;
 import com.cffex.nogc.cson.core.entityInterface.common.IEntitySchema;
@@ -18,8 +19,8 @@ public class DynamicSchema extends IEntitySchema {
         this.id = id;
     }
     private String id;
-    private ArrayList<String> propertyList = new ArrayList<String>();
-    private ArrayList<IElementType> propertyTypeList = new ArrayList<IElementType>();
+    private List<String> propertyList = new ArrayList<String>();
+    private List<IElementType> propertyTypeList = new ArrayList<IElementType>();
     public int getIndex(Object property){
         if (property instanceof  Integer){
             return (Integer)property;
@@ -34,7 +35,7 @@ public class DynamicSchema extends IEntitySchema {
     }
 
 
-    public ArrayList<String> getPropertyList() {
+    public List<String> getPropertyList() {
         return propertyList;
     }
 
@@ -42,7 +43,7 @@ public class DynamicSchema extends IEntitySchema {
         this.propertyList = propertyList;
     }
 
-    public ArrayList<IElementType> getPropertyTypeList() {
+    public List<IElementType> getPropertyTypeList() {
         return propertyTypeList;
     }
 

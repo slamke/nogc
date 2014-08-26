@@ -53,8 +53,4 @@ public abstract  class IElementType {
     public Object getValue(ReadCursor cursor ,Integer integer) {
         return getValue.apply(cursor,integer);
     }
-
-    //public void setGetValue(BiFunction<ReadCursor ,Integer,Object> getValue) {
-    //   this.getValue = getValue;
-    //}
 }
