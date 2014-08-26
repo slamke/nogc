@@ -75,7 +75,7 @@ public class CSONHelper {
 		CSONDocument document = new CSONDocument(EntitySchemaCache.objectSchemaFactory(clazz), byteBuffer);
 		return document.getRawValue(index);
 	}
-	
+
 	/**获取cson结构的第index个属性的Binary(无typecode)
 	 * @param byteBuffer
 	 * @param index
@@ -86,7 +86,6 @@ public class CSONHelper {
 		CSONDocument document = new CSONDocument(EntitySchemaCache.objectSchemaFactory(clazz), byteBuffer);
 		return document.getRawValue(index,false);
 	}
-	
 	/**
 	 * 从noGcByteBuffer中读取一个cson，从当前位置开始
 	 * @param noGcByteBuffer 带读取的noGcByteBuffer
