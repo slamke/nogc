@@ -109,7 +109,7 @@ public class CSONHelper {
 		int len = byteBuffer.getInt(byteBuffer.position());
 		byte[] value = new byte[len+4];
 		byteBuffer.get(value);
-		return buffer;
+		return value;
 	}
 	
 }

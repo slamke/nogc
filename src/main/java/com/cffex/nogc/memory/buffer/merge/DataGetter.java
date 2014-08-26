@@ -2,20 +2,26 @@ package com.cffex.nogc.memory.buffer.merge;
 
 import akka.actor.UntypedActor;
 
+import com.cffex.nogc.memory.buffer.exception.IllegalBufferMergeException;
 import com.cffex.nogc.memory.data.BlockData;
-import com.cffex.nogc.memory.data.DataOperateable;
 
 public class DataGetter extends UntypedActor {
 
   @Override
   public void onReceive(Object msg) {
     if (msg instanceof MergeTask) {
-    	System.out.println("DataGetter start:"+System.currentTimeMillis());
-    	MergeTask task = (MergeTask)msg;
-    	DataOperateable operateable = task.getSegmentExcerpt().getDataOperateable();
-    	BlockData data = operateable.getDataWithIdRange(task.getTempBuffer().getMinId(), task.getTempBuffer().getMaxId());
-    	System.out.println("DataGetter end:"+System.currentTimeMillis());
-    	getSender().tell(data, getSelf());
+		try {
+			System.out.println("DataGetter start:"+System.currentTimeMillis());
+			MergeTask task = (MergeTask)msg;
+	    	BlockData data;
+			data = task.getOriginalDataFromDataRegion();
+			System.out.println("DataGetter end:"+System.currentTimeMillis());
+	    	getSender().tell(data, getSelf());
+		} catch (IllegalBufferMergeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     } else
       unhandled(msg);
   	}
