@@ -6,11 +6,17 @@
  */
 package com.cffex.nogc.memory.data;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import com.cffex.nogc.memory.NoGcByteBuffer;
 import com.cffex.nogc.memory.Segment;
 import com.cffex.nogc.memory.SegmentExcerpt;
 import com.cffex.nogc.memory.buffer.Buffer;
 import com.cffex.nogc.memory.data.DataOperateable;
+import com.cffex.nogc.memory.data.exception.DataException;
 
 /**
  * @author zhou
@@ -20,6 +26,12 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 
 	protected SegmentExcerpt segmentExcerpt;
 	protected Data data;
+	protected Map<Thread, Integer> readingThreads = new HashMap<Thread, Integer>();
+	protected int writeAccesses    = 0;
+	protected int writeRequests    = 0;
+	protected Thread writingThread = null;
+	protected DataReadWriteLock lock;
+	ReadWriteLock conLock = new ReentrantReadWriteLock(false); 
 	public AbstractDataExcerpt(SegmentExcerpt segmentExcerpt, NoGcByteBuffer nogcData){
 		int capacity = Segment.DEFAULT_CAPACITY - Buffer.CAPACITY;
 		//NoGcByteBuffer noGcData = new NoGcByteBuffer(Buffer.CAPACITY, capacity, segmentExcerpt.getSegment().getByteBuffer());
@@ -34,46 +46,90 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	 * @see com.cffex.nogc.memory.data.DataOperateable#tryReadLock()
 	 */
 	@Override
-	public final int tryReadLock() {
-		// TODO Auto-generated method stub
-		return 0;
+	public final boolean tryReadLock() {
+//		try {
+//			lock.lockRead();
+//		} catch (InterruptedException | DataException e) { 
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		//conLock.readLock().lock();
+		return lock.SpinlockRead();
 	}
 
 	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.data.DataOperateable#getById(long)
+	 * @see com.cffex.nogc.memory.data.DataOperateable#unLockReadLock(java.lang.Thread)
 	 */
 	@Override
-	public final byte[] getById(long id) {
-		// TODO Auto-generated method stub
-		getDataById(id);
-		return null;
+	public void unLockReadLock() {
+		lock.unSpinlockRead();;
+		//conLock.readLock().unlock();
+
 	}
 
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.data.DataOperateable#tryWriteLock()
 	 */
 	@Override
-	public final int tryWriteLock() {
-		// TODO Auto-generated method stub
-		return 0;
+	public final void tryWriteLock() {
+		try {
+			lock.lockWrite();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//conLock.writeLock().lock();
 	}
 
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.data.DataOperateable#unlockWriteLock()
 	 */
 	@Override
-	public final int unlockWriteLock() {
-		// TODO Auto-generated method stub
-		return 0;
+	public final void unLockWriteLock() {
+		try {
+			lock.unlockWrite();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//conLock.writeLock().unlock();
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.data.DataOperateable#getById(long)
+	 */
+	@Override
+	public final byte[] getById(long id) {
+		// TODO Auto-generated method stub
+		return getDataById(id);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.data.DataOperateable#getPropertyById(long, int)
+	 */
+	@Override
+	public byte[] getPropertyById(long id, int index) {
+		// TODO Auto-generated method stub
+		return getDataPropertyById(id, index);
+	}
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.data.DataOperateable#getDataWithIdRange(long, long)
 	 */
 	@Override
-	public final byte[] getDataWithIdRange(long minId, long maxId) {
+	public final byte[] getDataWithIdRange0(long minId, long maxId) {
 		// TODO Auto-generated method stub
-		return null;
+		return getData0(minId, maxId);
+
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.data.DataOperateable#getDataWithIdRange(long, long)
+	 */
+	@Override
+	public final HashMap<Long, byte[]> getDataWithIdRange(long minId, long maxId) {
+		// TODO Auto-generated method stub
+		return getData(minId, maxId);
+
 	}
 
 	/* (non-Javadoc)
@@ -83,7 +139,7 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	public final int insertDataWithIdRange(byte[] data, byte[] index, long minId,
 			long maxId) {
 		// TODO Auto-generated method stub
-		
+		insertData(data, index, minId, maxId);
 		return 0;
 	}
 	
@@ -91,8 +147,16 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	 * @see com.cffex.nogc.memory.data.DataOperateable#insertData(byte[], byte[], boolean)
 	 */
 	@Override
-	public int insertData(byte[] data, byte[] index, boolean readonly) {
+	public int insertData(byte[] newData, Object[] newIndex, long miId, long maxId, boolean readonly) {
 		// TODO Auto-generated method stub
+		if(readonly){
+			try {
+				insertData(newData, newIndex, miId, maxId);
+			} catch (DataException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return 0;
 	}
 	
@@ -105,6 +169,10 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 		resizeData();
 		return null;
 	}
+	
+	
+	
+	
 	/*
 	 * 在Index区二分查找
 	 * @param id 查找的id
@@ -113,6 +181,8 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	protected abstract int getOffsetById(long id);
 		
 	protected abstract byte[] getDataById(long id);
+	
+	protected abstract byte[] getDataPropertyById(long id, int index);
 	
 	/*
 	 * index(id+offset)
@@ -130,8 +200,19 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	protected abstract int setIndexRegion();
 	protected abstract int checkFreeSpace();
 	protected abstract SegmentExcerpt resizeData();
-	protected abstract int insertDataWithIdRangexxx(byte[] newData, byte[] newIndex, long minId, long maxId);
-	protected abstract byte[] getDataWithIdRangexxx(long minId, long maxId);
+	protected abstract int insertData(byte[] newData, byte[] newIndex, long minId, long maxId);
+	protected abstract int insertData(byte[] newData, Object[] newIndex, long miId, long maxId) throws DataException;
+	protected abstract byte[] getData0(long minId, long maxId);
+	protected abstract HashMap<Long, byte[]> getData(long minId, long maxId);
+//	protected abstract void lockRead();
+//	protected abstract void unlockRead() throws InterruptedException;
+//	protected abstract void lockWrite();
+//	protected abstract void unlockWrite() throws InterruptedException;
 	
-
+//	private static ReadWriteLock lock = new ReentrantReadWriteLock();  
+//	private void getLock(){
+//		lock.readLock().lock();  
+//	}
+	
+	
 }

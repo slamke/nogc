@@ -218,6 +218,9 @@ public class BufferLog {
 		this.index = index;
 	}
 	
+	public int getIndex(){
+		return this.index;
+	}
 	
 	public byte[] getValue() {
 		return value;

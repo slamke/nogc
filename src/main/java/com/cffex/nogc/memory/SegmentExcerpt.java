@@ -1,11 +1,16 @@
 package com.cffex.nogc.memory;
 
+import java.util.Iterator;
+import java.util.List;
+
 import sun.nio.ch.DirectBuffer;
 
 import com.cffex.nogc.enumeration.IsolationType;
 import com.cffex.nogc.memory.buffer.Buffer;
 import com.cffex.nogc.memory.buffer.BufferExcerpt;
+import com.cffex.nogc.memory.buffer.BufferLog;
 import com.cffex.nogc.memory.buffer.BufferOperatable;
+import com.cffex.nogc.memory.buffer.BufferLog.BufferLogType;
 import com.cffex.nogc.memory.data.Data;
 import com.cffex.nogc.memory.data.DataExcerpt;
 import com.cffex.nogc.memory.data.DataOperateable;
@@ -17,7 +22,7 @@ import com.cffex.nogc.memory.utils.MemoryTool;
  * @ClassName SegmentExcerpt
  * @Description: SegmentExcerpt实现了SegmentOperateable接口，提供了段操作的真实实现
  */
-public class SegmentExcerpt implements SegmentOperateable {
+public class SegmentExcerpt extends AbstractSegmentExcerpt {
 	/**
 	 * 隔离级别 
 	 */
@@ -54,77 +59,7 @@ public class SegmentExcerpt implements SegmentOperateable {
 	public Segment getSegment() {
 		return segment;
 	}
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.SegmentOperateable#insertItem(long, byte[])
-	 */
-	@Override
-	public final boolean insertItem(long id, byte[] value) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.SegmentOperateable#deleteItem(long)
-	 */
-	@Override
-	public final boolean deleteItem(long id) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.SegmentOperateable#getItem(long)
-	 */
-	@Override
-	public final byte[] getItem(long id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.SegmentOperateable#getItemProperty(long, int)
-	 */
-	@Override
-	public final byte[] getItemProperty(long id, int index) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.SegmentOperateable#updateItem(long, byte[])
-	 */
-	@Override
-	public final boolean updateItem(long id, byte[] newValue) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.SegmentOperateable#updateItemProperty(long, int, byte[])
-	 */
-	@Override
-	public final boolean updateItemProperty(long id, int index, byte[] newValue) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.SegmentOperateable#freeSegment()
-	 */
-	@Override
-	public final boolean freeSegment() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.SegmentOperateable#deleteIdRange(long, long)
-	 */
-	@Override
-	public final boolean deleteIdRange(long minId, long maxId) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 	/**
 	 * 将buffer区获取的operation与data区中的数据进行merge
@@ -147,4 +82,92 @@ public class SegmentExcerpt implements SegmentOperateable {
 	 * TODO MERGE时，根据隔离级别设置lock
 	 */
 	public void mergeCallback(){}
+	
+	protected boolean addBufferLog(BufferLog bufferLog){
+		return this.bufferOperatable.appendOperation(bufferLog);
+	}
+	protected void release(){
+		this.getSegment().release();
+	}
+	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.AbstractSegmentExcerpt# isDataCompleteInBuffer(long)
+	 */
+	@Override
+	protected boolean isDataCompleteInBuffer(List<BufferLog> bufferList){
+//		INSERT(0),
+//		DELETE(1),
+//		UPDATE_ALL(2),
+//		UPDATE_PROPERTY(3);
+//		如果有DALETE、INSERT、UPDSTE_ALL那么buffer中的数据时完整的
+		for(BufferLog bLog : bufferList){
+			if(bLog.getFlag().equals(BufferLogType.DELETE)||
+					bLog.getFlag().equals(BufferLogType.INSERT)||
+					bLog.getFlag().equals(BufferLogType.UPDATE_ALL)){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.AbstractSegmentExcerpt#isDataPropertyCompleteInBuffer(java.util.List)
+	 */
+	@Override
+	protected boolean isDataPropertyCompleteInBuffer(
+			List<BufferLog> bufferList, int index) {
+		// TODO Auto-generated method stub
+		//如果有对这个id进行过
+		//DELETE操作，INSERT操作，UPDATE_ALL操作
+		//或者是对这个id的这个index的值做过更新即UPDATE_PROPERTY操作，那么buffer中的值是最新的
+		for(BufferLog bLog : bufferList){
+			if(bLog.getFlag().equals(BufferLogType.DELETE)||
+					bLog.getFlag().equals(BufferLogType.INSERT)||
+					bLog.getFlag().equals(BufferLogType.UPDATE_ALL)||
+					(bLog.getFlag().equals(BufferLogType.UPDATE_PROPERTY)&&bLog.getIndex() == index)){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+
+	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.AbstractSegmentExcerpt#findItemInBuffer(long)
+	 */
+	@Override
+	protected List<BufferLog> findItemInBuffer(long id) {
+		// TODO Auto-generated method stub
+		return this.bufferOperatable.getById(id);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.AbstractSegmentExcerpt#findItemInData(long)
+	 */
+	@Override
+	protected byte[] findItemInData(long id) {
+		// TODO Auto-generated method stub
+		return this.dataOperateable.getById(id);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.AbstractSegmentExcerpt#findItemPropertyInData(long, int)
+	 */
+	@Override
+	protected byte[] findItemPropertyInData(long id, int index) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.AbstractSegmentExcerpt#mergeData(byte[], byte[])
+	 */
+	@Override
+	protected byte[] mergeData(byte[] bufferValue, byte[] dataValue) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+	
 }

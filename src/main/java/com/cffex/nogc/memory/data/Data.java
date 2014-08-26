@@ -13,9 +13,9 @@ public class Data {
 	
 	//阈值设置为256K
 	public static final int THRESHOLD = 256;
-	
+
 	//segment 头部buffer 大小为128K
-	public static int OFFSET  = 128*1024;
+	public static final int OFFSET  = 128*1024;
 	
 	//
 	private NoGcByteBuffer nogcData;
@@ -23,18 +23,16 @@ public class Data {
 	private int capacity;
 	
 
-	private long minId;
-	private long maxId;
-	private int count;
+
+	private Index index;
+	public static final int DATA_CSON_LENGTH = 4;
 	
-	
-	protected Data(int capacity, int freespace, long maxId, long minId, int count,NoGcByteBuffer nogcData){
+	protected Data(int capacity, int freespace, long minId, long maxId, int count,NoGcByteBuffer nogcData){
 		this.capacity = capacity;
 		this.freespace = freespace;
-		this.maxId = maxId;
-		this.minId = minId;
-		this.count = count;
 		this.nogcData = nogcData;
+		int indexStartOffset = Data.OFFSET + this.capacity - Index.INDEX_ITEM_LENGTH*count;
+		this.index = new Index(minId, maxId, count, indexStartOffset, nogcData);
 	}
 	//
 	protected int updateMetaData(){
@@ -70,32 +68,22 @@ public class Data {
 	}
 
 	protected long getMinId() {
-		return this.minId;
-	}
-
-	protected void setMinId(long minId) {
-		this.minId = minId;
+		return this.index.getMinId();
 	}
 
 	protected long getMaxId(){
-		return this.maxId;
-	}
-	
-	protected void setMaxId(long maxId) {
-		this.maxId = maxId;
+		return this.index.getMaxId();
 	}
 
-	protected int getCount() {
-		return count;
+	
+	protected Index getIndex(){
+		return this.index;
 	}
 	
 	protected void updateCount(){
-		this.count = this.count+1;
+		this.index.updateCount();
 	}
 	
-	protected void setCount(int count) {
-		this.count = count;
-	}
 
 	//read bytes
 	protected byte[] getBytes(int length){
@@ -185,7 +173,41 @@ public class Data {
 	}
 	
 	protected int getIndexStartOffset(){
-		return getIndexEndOffset()-getCount()*12;
+		return getIndexEndOffset()-getCount()*Index.INDEX_ITEM_LENGTH;
+	}
+	/**
+	 * @param offset2
+	 * @return
+	 */
+	public byte[] getDataByOffset(int offset) {
+		// TODO Auto-generated method stub
+		int length = this.getInt(offset);
+		return this.getBytes(offset,DATA_CSON_LENGTH + length);
+
+	}
+	/**
+	 * @param offset2
+	 * @return
+	 */
+	public int getDataOffset(int offset) {
+		// TODO Auto-generated method stub
+		int result = this.getInt(offset-Index.INDEX_ITEM_LENGTH);
+		return result;
+	}
+	/**
+	 * @param i
+	 * @return
+	 */
+	public long getIdByOffset(int offset) {
+		// TODO Auto-generated method stub
+		return this.getLong(offset-Index.INDEX_ITEM_LENGTH);
+	}
+	/**
+	 * @return
+	 */
+	public int getCount() {
+		// TODO Auto-generated method stub
+		return this.index.getCount();
 	}
 	
 	
