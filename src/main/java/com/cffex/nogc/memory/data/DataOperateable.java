@@ -50,7 +50,7 @@ public interface DataOperateable {
 	 */
 	public byte[] getDataWithIdRange0(long minId, long maxId);
 	
-	public HashMap<Long, byte[]> getDataWithIdRange(long minId, long maxId);
+	public BlockData getDataWithIdRange(long minId, long maxId);
 
 	/**
 	 * @param data
@@ -59,7 +59,7 @@ public interface DataOperateable {
 	 * @param maxId
 	 * @return
 	 */
-	public int insertDataWithIdRange(byte[] data, byte[] index, long minId,
+	public int insertDataWithIdRange(BlockData data, long minId,
 			long maxId);
 	public int insertData(byte[] newData, Object[] newIndex, long miId, long maxId, boolean readonly);
 	public SegmentExcerpt resize();

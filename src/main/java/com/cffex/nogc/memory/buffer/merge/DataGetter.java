@@ -1,11 +1,9 @@
 package com.cffex.nogc.memory.buffer.merge;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
-import com.cffex.nogc.memory.data.DataOperateable;
-
 import akka.actor.UntypedActor;
+
+import com.cffex.nogc.memory.data.BlockData;
+import com.cffex.nogc.memory.data.DataOperateable;
 
 public class DataGetter extends UntypedActor {
 
@@ -15,11 +13,9 @@ public class DataGetter extends UntypedActor {
     	System.out.println("DataGetter start:"+System.currentTimeMillis());
     	MergeTask task = (MergeTask)msg;
     	DataOperateable operateable = task.getSegmentExcerpt().getDataOperateable();
-    	operateable.getDataWithIdRange(task.getTempBuffer().getMinId(), task.getTempBuffer().getMaxId());
-    	//task.
+    	BlockData data = operateable.getDataWithIdRange(task.getTempBuffer().getMinId(), task.getTempBuffer().getMaxId());
     	System.out.println("DataGetter end:"+System.currentTimeMillis());
-    	//getSender().tell(Collections.unmodifiableList(data), getSelf());
-    	
+    	getSender().tell(data, getSelf());
     } else
       unhandled(msg);
   	}

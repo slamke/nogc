@@ -2,8 +2,6 @@ package com.cffex.nogc.memory.buffer.merge;
 
 import java.util.List;
 
-import com.sun.scenario.effect.Merge;
-
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
@@ -12,6 +10,8 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
+
+import com.cffex.nogc.memory.data.BlockData;
 
 public class Merger extends UntypedActor {
 
@@ -42,7 +42,7 @@ public class Merger extends UntypedActor {
     		Future<Object> data = Patterns.ask(dataGetter, newTask, timeout);
         	
         	TempBuffer result = (TempBuffer) Await.result(buffer, timeout.duration());
-        	List<Integer> result2 = (List<Integer>) Await.result(data, timeout.duration());
+        	BlockData blockData = (BlockData) Await.result(data, timeout.duration());
         	
 		} catch (Exception e) {
 			// TODO: handle exception
