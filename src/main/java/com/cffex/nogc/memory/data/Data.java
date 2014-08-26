@@ -163,9 +163,9 @@ public class Data {
 	}
 	protected int getDataEndOffset(){
 		//找最后一个index
-		int dataOffset = getInt(getIndexStartOffset()+8);
+		int dataOffset = getInt(getIndexStartOffset()+Index.ID_LENGTH);
 		int dataLength = getInt(dataOffset);
-		return dataOffset+dataLength;
+		return dataOffset+dataLength+DATA_CSON_LENGTH;
 	}
 	
 	protected int getIndexEndOffset(){
@@ -185,22 +185,36 @@ public class Data {
 		return this.getBytes(offset,DATA_CSON_LENGTH + length);
 
 	}
+	
 	/**
 	 * @param offset2
 	 * @return
 	 */
-	public int getDataOffset(int offset) {
+	public byte[] getDatas(int startOffset, int endOffset) {
 		// TODO Auto-generated method stub
-		int result = this.getInt(offset-Index.INDEX_ITEM_LENGTH);
-		return result;
+		return getBytes(startOffset, endOffset-startOffset+1);
+
 	}
+	
 	/**
-	 * @param i
+	 * @param offset index的offset
 	 * @return
 	 */
-	public long getIdByOffset(int offset) {
+	public int getDataItemStartOffset(int offset) {
 		// TODO Auto-generated method stub
-		return this.getLong(offset-Index.INDEX_ITEM_LENGTH);
+		int result = this.getInt(offset-Index.OFFSET_LENGTH);
+		return result;
+	}
+
+	/**
+	 * @param offset data开始的offset
+	 * @return
+	 */
+	public int getDataItemEndOffset(int offset) {
+		// TODO Auto-generated method stub
+		int length = this.getInt(offset);
+		int result = offset+DATA_CSON_LENGTH+length;
+		return result;
 	}
 	/**
 	 * @return
@@ -210,6 +224,39 @@ public class Data {
 		return this.index.getCount();
 	}
 	
+	protected void copyLargerThanMaxIdData(int maxIdOffsetIndex,
+			int dataLength, int dataOffsetIncrement) {
+		int maxIdOffsetData = getInt(maxIdOffsetIndex-Index.OFFSET_LENGTH);
+		int copyLength = getDataEndOffset() - maxIdOffsetData;
+		int desOffset = maxIdOffsetData + dataOffsetIncrement;
+		copyBytes(maxIdOffsetData, copyLength, desOffset);
+		// TODO Auto-generated method stub
+		
+	}
+	/**
+	 * @param minId
+	 */
+	protected void setMinId(long minId) {
+		// TODO Auto-generated method stub
+		this.index.setMinId(minId);
+	}
+	/**
+	 * @param maxId
+	 */
+	protected void setMaxId(long maxId) {
+		// TODO Auto-generated method stub
+		this.index.setMaxId(maxId);
+		
+	}
+	/**
+	 * @param minIdOffsetIndex
+	 * @return
+	 */
+	protected int getDataOffsetByIndexOffset(int minIdOffsetIndex) {
+		// TODO Auto-generated method stub
+		return this.getInt(minIdOffsetIndex-12);
+
+	}
 	
 	
 }
