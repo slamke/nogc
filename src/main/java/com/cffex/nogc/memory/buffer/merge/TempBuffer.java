@@ -4,12 +4,15 @@
  */
 package com.cffex.nogc.memory.buffer.merge;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.cffex.nogc.cson.core.utils.CSONMergeTool;
 import com.cffex.nogc.cson.core.utils.Tuple;
 import com.cffex.nogc.memory.NoGcByteBuffer;
 import com.cffex.nogc.memory.buffer.Buffer;
@@ -17,8 +20,8 @@ import com.cffex.nogc.memory.buffer.BufferLog;
 import com.cffex.nogc.memory.buffer.BufferLog.BufferLogCusor;
 import com.cffex.nogc.memory.buffer.BufferLog.BufferLogType;
 import com.cffex.nogc.memory.buffer.BufferLogComparator;
+import com.cffex.nogc.memory.buffer.exception.IllegalBufferMergeException;
 import com.cffex.nogc.memory.buffer.exception.TempBufferException;
-import com.cffex.nogc.memory.utils.PotentialProblem;
 
 /**
  * @author sunke
@@ -70,8 +73,8 @@ public class TempBuffer extends Buffer{
 	public TempBuffer(List<BufferLog> insertIndexList, List<BufferLog> updateIndexList,
 			long minId, long maxId) {
 		super(null);
-		this.insertIndexList = insertIndexList;
-		this.updateIndexList = updateIndexList;
+		this.insertIndexList = Collections.unmodifiableList(insertIndexList);
+		this.updateIndexList = Collections.unmodifiableList(updateIndexList);
 		this.minId = minId;
 		this.maxId = maxId;
 	}
@@ -104,8 +107,9 @@ public class TempBuffer extends Buffer{
 	/**
 	 * 对未处理的insertIndexList和updateIndexList进行排序和归并处理
 	 * @throws TempBufferException 
+	 * @throws IllegalBufferMergeException 
 	 */
-	public TempBuffer constructIndexList() throws TempBufferException{
+	public TempBuffer constructIndexList() throws TempBufferException, IllegalBufferMergeException{
 		if (!isReady()) {
 			throw new TempBufferException("Invoke the preperation() method first and get the return value to invoke this method.");
 		}
@@ -178,16 +182,38 @@ public class TempBuffer extends Buffer{
 			return true;
 		}
 	}
-	private List<BufferLog> mergeBufferLog(List<BufferLog> insertList, List<BufferLog> updateList){
+	private List<BufferLog> mergeBufferLog(List<BufferLog> insertList, List<BufferLog> updateList) throws IllegalBufferMergeException{
 		if (updateList != null) {
 			for (BufferLog bufferLog : updateList) {
+				if (insertList.size() == 0) {
+					throw new IllegalBufferMergeException("Illegal update/delete when there is no insert operation.");
+				}
 				//因为insertList和updateList进行排序后，所有的时间顺序依然保持，所以只需要对insertList的首元素进行merge操作
-				//如果update是delete操作，删除insertList中相应的
+				//如果update是delete操作，删除insertList中首位的记录
 				if (bufferLog.getFlag() == BufferLogType.DELETE) {
-					
+					insertList.remove(0);
+				}
+				//如果update是UPDATE_ALL操作，替换insertList中首位的元素的内容
+				else if (bufferLog.getFlag() == BufferLogType.UPDATE_ALL) {
+					BufferLog insert = insertList.get(0);
+					insert.setValue(bufferLog.getValue());
+				}
+				//如果update是UPDATE_PROPERTY操作，更新insertList中首位的元素的内容
+				else if (bufferLog.getFlag() == BufferLogType.UPDATE_PROPERTY) {
+					try {
+						BufferLog insert = insertList.get(0);
+						ByteBuffer bb = ByteBuffer.wrap(insert.getValue()).order(ByteOrder.LITTLE_ENDIAN);
+						ByteBuffer content = CSONMergeTool.merge(Class.forName(bufferLog.getSchemaKey()), bb, new Tuple<Integer, byte[]>(bufferLog.getIndex(), bufferLog.getValue()));
+						byte[] value = new byte[content.limit()];
+						content.get(value);
+						insert.setValue(value);
+					} catch (ClassNotFoundException e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
 				}
 			}
 		}
-		return null;
+		return insertList;
 	}
 }

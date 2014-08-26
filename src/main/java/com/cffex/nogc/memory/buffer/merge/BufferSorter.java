@@ -4,11 +4,10 @@
  */
 package com.cffex.nogc.memory.buffer.merge;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import akka.actor.UntypedActor;
+
+import com.cffex.nogc.memory.buffer.exception.IllegalBufferMergeException;
+import com.cffex.nogc.memory.buffer.exception.TempBufferException;
 
 /**
  * @author sunke
@@ -19,19 +18,20 @@ public class BufferSorter extends UntypedActor {
 
 	  @Override
 	  public void onReceive(Object msg) {
-	    if (msg instanceof TempBuffer) {
+	    if (msg instanceof MergeTask) {
 	      System.out.println("BufferSorter start:"+System.currentTimeMillis());
 	      try {
-			Thread.sleep(20);
-	      } catch (InterruptedException e) {
+			MergeTask task = (MergeTask)msg;
+			//对tempBuffer中的数据进行初期的merge操作。
+			TempBuffer buffer = task.getTempBuffer().constructIndexList();
+			getSender().tell(buffer, getSelf());
+	      } catch (TempBufferException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+	      } catch (IllegalBufferMergeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 	      }
-	      ArrayList<Integer> data = new ArrayList<Integer>(3);
-		    data.add(8);
-		    data.add(8);
-		    data.add(8);
-	      getSender().tell(msg, getSelf());
 	      System.out.println("BufferSorter end:"+System.currentTimeMillis());
 	    } else
 	      unhandled(msg);

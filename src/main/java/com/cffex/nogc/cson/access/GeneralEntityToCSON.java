@@ -267,7 +267,7 @@ public class GeneralEntityToCSON {
      */
     public static Object readRawValue2Obj(byte[] b,boolean needTypeCode,byte typeCode){
         ByteBuffer bb = ByteBuffer.wrap(b).order(ByteOrder.LITTLE_ENDIAN);
-            byte rawValueType = 0;
+        byte rawValueType = 0;
         if (needTypeCode) rawValueType = typeCode; else rawValueType = bb.get();
         return  convertRawValue(rawValueType,bb);
     }
