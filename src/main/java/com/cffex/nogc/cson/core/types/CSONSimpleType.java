@@ -20,19 +20,6 @@ import com.cffex.nogc.cson.core.entityInterface.common.IElementType;
  */
 public class CSONSimpleType extends IElementType {
 
-//    public CSONSimpleType(byte elementTypeCode){
-//        typeCode = elementTypeCode;
-//        getValue = getValueFunc(elementTypeCode);
-//        writeRawFunc = getWriteValueFunc(elementTypeCode);
-//        writeElement = (Object value,WriteCursor cur,int index)->{
-//            try {
-//                cur.getWriter().writeValue(typeCode, value, cur, index);
-//            }catch (Exception e){e.printStackTrace();}
-//        };
-//        readArrayValue = getSimpleTypeArrayFunc(elementTypeCode);
-//        writeArrayValue = getSimpleTypeArrayWriter(elementTypeCode);
-//    }
-
     public CSONSimpleType(CSONTypes types){
         this.csonTypes = types;
         typeCode = types.getValue();

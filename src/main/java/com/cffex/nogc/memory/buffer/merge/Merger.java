@@ -2,8 +2,6 @@ package com.cffex.nogc.memory.buffer.merge;
 
 import java.util.List;
 
-import com.cffex.nogc.memory.buffer.MergeTask;
-import com.cffex.nogc.memory.buffer.TempBuffer;
 import com.sun.scenario.effect.Merge;
 
 import scala.concurrent.Await;
@@ -22,9 +20,9 @@ public class Merger extends UntypedActor {
   
   @Override
   public void preStart() {
-    // create the greeter actor
+    // //create the greeter actor
     //final ActorRef greeter = getContext().actorOf(Props.create(DataGetter.class), "greeter");
-    // tell it to perform the greeting
+    // //tell it to perform the greeting
     //greeter.tell(DataGetter.Msg.GREET, getSelf());
   }
 
@@ -34,15 +32,18 @@ public class Merger extends UntypedActor {
     	try {
     		Timeout timeout = new Timeout(Duration.create(1, "seconds"));
     		MergeTask task = (MergeTask)msg;
-    		TempBuffer another = task.merge();
-        	Future<Object> buffer = Patterns.ask(bufferSorter, another, timeout);
-        	Future<Object> data = Patterns.ask(dataGetter, another, timeout);
+    		//遍历buffer获取maxId和minId
+    		TempBuffer another = task.preTraversalOperation();
+    		//mergeTask为不可变类，因此重新构建一个新的对象
+    		MergeTask newTask = new MergeTask(another, task.getSegmentExcerpt());
+        	//由buffersorter进行buffer中的merge
+    		Future<Object> buffer = Patterns.ask(bufferSorter, newTask, timeout);
+        	//由dataGetter获取maxId和minId
+    		Future<Object> data = Patterns.ask(dataGetter, newTask, timeout);
+        	
         	TempBuffer result = (TempBuffer) Await.result(buffer, timeout.duration());
         	List<Integer> result2 = (List<Integer>) Await.result(data, timeout.duration());
-        	System.out.println("buffer:"+result.toString());
-        	System.out.println("data:"+result2.toString());
-        	System.out.println("merging");
-        	getSender().tell("merging", getSelf());
+        	
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();

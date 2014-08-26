@@ -37,11 +37,13 @@ public class CSONComplexElement implements IEntityRandomAccess, IEntitySequenceA
             thisElementType = CSONElement.getComplexType(schemaOrType);
         }
         elementList = new ArrayList<IElementValue>(thisSchema.count());
-        if (rawData == null){
-            for(int i =0;i<thisSchema.count();i++){
-                elementList.add(i,null);
-            }
-        }else cursor = rawData;
+        //初始化elementList的元素为null--->lazy load
+        for(int i =0;i<thisSchema.count();i++){
+            elementList.add(i,null);
+        }
+        if (rawData != null){
+        	cursor = rawData;
+        }
     }
     private boolean fullLoaded;
     private IEntitySchema thisSchema;
