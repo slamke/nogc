@@ -1,5 +1,7 @@
 package com.cffex.nogc.memory.data;
 
+import java.util.List;
+
 import com.cffex.nogc.memory.SegmentExcerpt;
 
 /**
@@ -41,13 +43,23 @@ public interface DataOperateable {
 	 */
 	public byte[] getPropertyById(long id, int index);
 	/**
-	 * @param minId
-	 * @param maxId
-	 * @return
+	 * @param minId 最小id
+	 * @param maxId 最大id
+	 * @return 得到id在minId和maxId之间的data数组
 	 */
 	public byte[] getDataWithIdRange0(long minId, long maxId);
 	
-
+	/**
+	 * @param minId 最小id
+	 * @param maxId 最大id
+	 * @return 得到id在minId和maxId之间的index，第一个indexoffset设置为0；
+	 */
+	public List<IndexItem> getIndexRegion(long minId, long maxId);
+	/**
+	 * @param minId 最小id
+	 * @param maxId 最大id
+	 * @return 得到id在minId和maxId之间的BlockData,由indexItem list和包含data数据的buffer组成
+	 */
 	public BlockData getDataWithIdRange(long minId, long maxId);
 
 	//public HashMap<Long, byte[]> getDataWithIdRange(long minId, long maxId);
@@ -63,14 +75,11 @@ public interface DataOperateable {
 	public void insertDataWithIdRange(byte[] dataBytes, IndexItem[] indexItems, long minId, long maxId);
 
 	/**
-	 * @param dataBytes  插入数据的byte数组
-	 * @param indexBytes 插入的index byte数组(id+offset),id从小到大，offset从0开始
+	 * @param data  插入数据
 	 * @param minId 插入的最小id
 	 * @param maxId 插入的最大id
 	 */
-	public int insertDataWithIdRange(BlockData data, long minId,
-			long maxId);
-	public int insertData(byte[] newData, Object[] newIndex, long miId, long maxId, boolean readonly);
+	public int insertDataWithIdRange(BlockData blockData, long minId,long maxId);
 
 	public void insertDataWithIdRange(byte[] dataBytes, byte[] indexBytes, long minId, long maxId);
 	/**

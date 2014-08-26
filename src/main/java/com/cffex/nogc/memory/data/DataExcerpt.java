@@ -11,8 +11,10 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.text.DefaultEditorKit.CopyAction;
 
@@ -100,17 +102,11 @@ public class DataExcerpt extends AbstractDataExcerpt{
 	
 	
 	//object数组id,index,id,index
-	protected Object[] GetIndexRegion(long minid, long maxid){
-		
-		int offset1 = findIdOffset(minid);
-		int offset2 = findIdOffset(maxid);
-		int size = (offset1-offset2)/12;
-		Object[] result = new Object[size*2];
-		for(int i = 0; i < size; i++){
-			result[(size-1)*2] = this.data.getLong(offset1-8);
-			result[(size-1)*2+1] = this.data.getInt(offset1-4);
-		}
-		return result;
+	public List<IndexItem> getIndexRegion(long minId, long maxId){
+		int minIdIndexOffset = findIdOffset(minId);//找到最小id的index offset
+		int maxIdIndexOffset = findIdOffset(maxId);//找到最大id的index offset
+		int minIdDataStartOffset = this.data.getDataItemStartOffset(minIdIndexOffset);//最小id的data offset
+		return this.data.getIndex().getOffsetList(minIdIndexOffset, maxIdIndexOffset, minIdDataStartOffset);
 	}
 	protected int setIndexRegion(){
 		return 0;
@@ -181,28 +177,34 @@ public class DataExcerpt extends AbstractDataExcerpt{
 	@Override
 	protected byte[] getData0(long minId, long maxId) {
 		// TODO Auto-generated method stub
-		int minIndexOffset = findIdOffset(minId);//找到最小id的index offset
-		int maxIndexOffset = findIdOffset(maxId);//找到最大id的index offset
-		int minDataStartOffset = this.data.getDataItemStartOffset(minIndexOffset);//最小id的data offset
-		int maxDataStartOffset = this.data.getDataItemStartOffset(maxIndexOffset);//最大id的data offset
+		int minIdIndexOffset = findIdOffset(minId);//找到最小id的index offset
+		int maxIdIndexOffset = findIdOffset(maxId);//找到最大id的index offset
+		int minIdDataStartOffset = this.data.getDataItemStartOffset(minIdIndexOffset);//最小id的data offset
+		int maxIdDataStartOffset = this.data.getDataItemStartOffset(maxIdIndexOffset);//最大id的data offset
 		//最后一个data结束的位置 = data offset+cson length(4) + length
 		
-		int maxDataEndOffset = this.data.getDataItemEndOffset(maxDataStartOffset);
-		byte[] result = this.data.getDatas(minDataStartOffset, maxDataEndOffset);
+		int maxIdDataEndOffset = this.data.getDataItemEndOffset(maxIdDataStartOffset);
+		byte[] result = this.data.getDatas(minIdDataStartOffset, maxIdDataEndOffset);
 		return result;
 	}
 	
 	@Override
 	protected BlockData getData(long minId, long maxId) {
 		// TODO Auto-generated method stub
-		int minIndexOffset = findIdOffset(minId);//找到最小id的index offset
-		int maxIndexOffset = findIdOffset(maxId);//找到最大id的index offset
-		int minDataStartOffset = this.data.getInt(minIndexOffset-12);//最小id的data offset
-		int maxDataStartOffset = this.data.getInt(maxIndexOffset-12);//最大id的data offset
-		//最后一个data结束的位置 = data offset+cson length(4) + length
-		int maxDataEndOffset = this.data.getInt(maxDataStartOffset) + 4 +this.data.getInt(this.data.getInt(maxDataStartOffset));
-		byte[] result = this.data.getBytes(minDataStartOffset, maxDataEndOffset - minDataStartOffset+1);
-		return null;
+		int minIdIndexOffset = findIdOffset(minId);//找到最小id的index offset
+		int maxIdIndexOffset = findIdOffset(maxId);//找到最大id的index offset
+		int minIdDataStartOffset = this.data.getDataItemStartOffset(minIdIndexOffset);//最小id的data offset
+		int maxIdDataStartOffset = this.data.getDataItemStartOffset(maxIdIndexOffset);//最大id的data offset
+		//最后一个data结束的位置
+		int maxIdDataEndOffset = this.data.getDataItemEndOffset(maxIdDataStartOffset);
+		byte[] dataBytes = this.data.getDatas(minIdDataStartOffset, maxIdDataEndOffset);
+		ByteBuffer buf = ByteBuffer.allocate(dataBytes.length);
+		buf.put(dataBytes);
+		buf.flip();
+		List<IndexItem> offsetList = this.data.getIndex().getOffsetList(minIdIndexOffset, maxIdIndexOffset,minIdDataStartOffset);
+		
+		BlockData result = new BlockData(offsetList, buf);
+		return result;
 	}
 	
 	@Override
@@ -225,10 +227,10 @@ public class DataExcerpt extends AbstractDataExcerpt{
 
 		int maxIdIndexOffset = findIdOffset(maxId);
 		int minIdIndexOffset = findIdOffset(minId);
-		int minIdDataOffset = this.data.getInt(minIdIndexOffset-Index.OFFSET_LENGTH); 
-		int maxIdDataOffset = this.data.getInt(maxIdIndexOffset-Index.OFFSET_LENGTH);
+		int minIdDataStartOffset = this.data.getDataItemStartOffset(minIdIndexOffset);//最小id的data offset
+		int maxIdDataStartOffset = this.data.getDataItemStartOffset(maxIdIndexOffset);//最大id的data offset
 		//大于maxid的data数据移动量
-		int dataOffsetIncrement = dataBytes.length - (maxIdDataOffset - minIdDataOffset);
+		int dataOffsetIncrement = dataBytes.length - (maxIdDataStartOffset - minIdDataStartOffset);
 		//index区数据移动
 		copyLargerThanMaxIdIndex(maxIdIndexOffset, minIdIndexOffset, indexBytes.length, dataOffsetIncrement);
 		//data区数据移动
@@ -236,7 +238,7 @@ public class DataExcerpt extends AbstractDataExcerpt{
 		//data区插入
 		insertData(dataBytes, minIdIndexOffset);
 		//index区插入
-		insertIndex(indexBytes, minIdDataOffset, minIdIndexOffset);
+		insertIndex(indexBytes, minIdDataStartOffset, minIdIndexOffset);
 	}
 	/**
 	 * @param indexBytes
@@ -275,10 +277,10 @@ public class DataExcerpt extends AbstractDataExcerpt{
 
 		int maxIdIndexOffset = findIdOffset(maxId);
 		int minIdIndexOffset = findIdOffset(minId);
-		int minIdDataOffset = this.data.getInt(minIdIndexOffset-Index.OFFSET_LENGTH); 
-		int maxIdDataOffset = this.data.getInt(maxIdIndexOffset-Index.OFFSET_LENGTH);
+		int minIdDataStartOffset = this.data.getDataItemStartOffset(minIdIndexOffset);//最小id的data offset
+		int maxIdDataStartOffset = this.data.getDataItemStartOffset(maxIdIndexOffset);//最大id的data offset
 		//大于maxid的data数据移动量
-		int dataOffsetIncrement = dataBytes.length - (maxIdDataOffset - minIdDataOffset);
+		int dataOffsetIncrement = dataBytes.length - (maxIdDataStartOffset - minIdDataStartOffset);
 		//index区数据移动
 		copyLargerThanMaxIdIndex(maxIdIndexOffset, minIdIndexOffset, indexItems.length*Index.INDEX_ITEM_LENGTH, dataOffsetIncrement);
 		//data区数据移动
@@ -286,8 +288,9 @@ public class DataExcerpt extends AbstractDataExcerpt{
 		//data区插入
 		insertData(dataBytes, minIdIndexOffset);
 		//index区插入
-		insertIndex(indexItems, minIdDataOffset, minIdIndexOffset);
+		insertIndex(indexItems, minIdDataStartOffset, minIdIndexOffset);
 	}
+	
 
 	/**
 	 * @param indexItems
@@ -298,6 +301,47 @@ public class DataExcerpt extends AbstractDataExcerpt{
 			int minIdIndexOffset) {
 		this.data.getIndex().insertIndex(indexItems, minIdDataOffset, minIdIndexOffset);
 	}
+	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.data.AbstractDataExcerpt#insertData(com.cffex.nogc.memory.data.BlockData, long, long)
+	 */
+	@Override
+	protected void insertData(BlockData blockData, long minId, long maxId) {
+		// TODO Auto-generated method stub
+		if(blockData.getOffsetList().size()<1){
+			try {
+				throw new DataException("datas in index array is not enough!!!");
+			} catch (DataException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if(minId<this.data.getMinId()){
+			this.data.setMinId(minId);
+		}
+		if(maxId > this.data.getMaxId()){
+			this.data.setMaxId(maxId);
+		}
+
+		int maxIdIndexOffset = findIdOffset(maxId);
+		int minIdIndexOffset = findIdOffset(minId);
+		int minIdDataStartOffset = this.data.getDataItemStartOffset(minIdIndexOffset);//最小id的data offset
+		int maxIdDataStartOffset = this.data.getDataItemStartOffset(maxIdIndexOffset);//最大id的data offset
+		//大于maxid的data数据移动量
+		int dataOffsetIncrement = blockData.getDataBuffer().capacity() - (maxIdDataStartOffset - minIdDataStartOffset);
+		//index区数据移动
+		copyLargerThanMaxIdIndex(maxIdIndexOffset, minIdIndexOffset, blockData.getOffsetList().size()*Index.INDEX_ITEM_LENGTH, dataOffsetIncrement);
+		//data区数据移动
+		copyLargerThanMaxIdData(maxIdIndexOffset, blockData.getDataBuffer().capacity(), dataOffsetIncrement);
+		//data区插入
+		insertData(blockData.getDataBuffer().array(), minIdIndexOffset);
+		//index区插入
+		insertIndex(blockData.getOffsetList(), minIdDataStartOffset, minIdIndexOffset);
+	}
+	private void insertIndex(List<IndexItem> offstList, int minIdDataOffset,
+			int minIdIndexOffset) {
+		this.data.getIndex().insertIndex(offstList, minIdDataOffset, minIdIndexOffset);
+	}
+	
 	/**
 	 * @param dataBytes
 	 * @param minIdOffsetIndex
@@ -348,6 +392,9 @@ public class DataExcerpt extends AbstractDataExcerpt{
 		// TODO Auto-generated method stub
 		return this.data.getIndex().findIdOffset(id);
 	}
+//===============================
+
+
 
 
 

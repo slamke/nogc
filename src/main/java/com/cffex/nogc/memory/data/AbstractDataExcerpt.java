@@ -8,6 +8,7 @@
 package com.cffex.nogc.memory.data;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -154,6 +155,17 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	}
 	
 	/* (non-Javadoc)
+	 * @see com.cffex.nogc.memory.data.DataOperateable#insertDataWithIdRange(com.cffex.nogc.memory.data.BlockData, long, long)
+	 */
+	@Override
+	public int insertDataWithIdRange(BlockData blockData, long minId, long maxId) {
+		// TODO Auto-generated method stub
+		insertData(blockData, minId, maxId);
+		return 0;
+	}
+	
+
+	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.data.DataOperateable#insertData(byte[], byte[], boolean)
 	 */
 	@Override
@@ -174,7 +186,7 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 			insertData(dataBytes, indexBytes, miId, maxId);
 		}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.data.DataOperateable#resize()
 	 */
@@ -211,14 +223,15 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	protected abstract int findIdOffset(long id);
 
 	//object数组id,index,id,index
-	protected abstract Object[] GetIndexRegion(long minid, long maxid);
+	public abstract List<IndexItem> getIndexRegion(long minid, long maxid);
 	protected abstract int setIndexRegion();
 	protected abstract int checkFreeSpace();
 	protected abstract SegmentExcerpt resizeData();
 	protected abstract void insertData(byte[] dataBytes, byte[] indexBytes, long minId, long maxId);
 	protected abstract void insertData(byte[] dataBytes, IndexItem[] indexItems, long minId, long maxId);
 	protected abstract byte[] getData0(long minId, long maxId);
-	protected abstract HashMap<Long, byte[]> getData(long minId, long maxId);
+	protected abstract BlockData getData(long minId, long maxId);
+	protected abstract void insertData(BlockData blockData, long minId, long maxId);
 //	protected abstract void lockRead();
 //	protected abstract void unlockRead() throws InterruptedException;
 //	protected abstract void lockWrite();

@@ -10,6 +10,8 @@ package com.cffex.nogc.memory.data;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.cffex.nogc.memory.NoGcByteBuffer;
 
@@ -229,6 +231,34 @@ public class Index {
 		putBytes(tempIndexBytes, newIndexStartOffset);
 		
 	}
+	
+	/**
+	 * @param offstList
+	 * @param minIdDataOffset
+	 * @param minIdIndexOffset
+	 */
+	public void insertIndex(List<IndexItem> offstList, int minIdDataOffset,
+			int minIdIndexOffset) {
+		// TODO Auto-generated method stub
+		byte[] indexBytes = new byte[offstList.size()*Index.INDEX_ITEM_LENGTH];
+		byte[] intbyte = new byte[Index.OFFSET_LENGTH];
+		byte[] longbyte = new byte[Index.ID_LENGTH];
+		for(int i = 0; i<offstList.size(); i++){
+			try {
+				longbyte = objectToBytes(offstList.get(i).getId());
+				intbyte = objectToBytes(offstList.get(i).getOffset());
+				System.arraycopy(longbyte, 0, indexBytes, i*12, 8);
+				System.arraycopy(intbyte, 0, indexBytes, i*12+8, 4);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		byte[] tempIndexBytes = update(indexBytes, minIdDataOffset);
+		int newIndexStartOffset = minIdIndexOffset - indexBytes.length;
+		putBytes(tempIndexBytes, newIndexStartOffset);
+		
+	}
 	//read bytes
 	private byte[] getBytes(int length){
 		return nogcIndex.getBytes(length);
@@ -313,6 +343,25 @@ public class Index {
 		// TODO Auto-generated method stub
 		this.maxId = maxId;
 	}
+	/**
+	 * @param minIndexOffset
+	 * @param maxIndexOffset
+	 * @param minDataStartOffset 
+	 * @return
+	 */
+	public List<IndexItem> getOffsetList(int minIndexOffset,
+			int maxIndexOffset, int minDataStartOffset) {
+		int size = (minIndexOffset - maxIndexOffset)/Index.INDEX_ITEM_LENGTH+1;
+		List<IndexItem> resultIndexItems = new ArrayList<IndexItem>();
+		for(int i = 0; i < size; i++){
+			IndexItem indexItem = new IndexItem(this.getLong(minIndexOffset-size*Index.INDEX_ITEM_LENGTH),
+					this.getInt(minIndexOffset-size*Index.INDEX_ITEM_LENGTH+Index.ID_LENGTH)-minDataStartOffset);
+			resultIndexItems.add(indexItem);
+		}
+		// TODO Auto-generated method stub
+		return resultIndexItems;
+	}
+
 
 	
 }
