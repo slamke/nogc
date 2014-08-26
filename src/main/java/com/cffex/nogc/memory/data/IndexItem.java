@@ -26,6 +26,13 @@ public class IndexItem {
 	public int getOffset() {
 		return offset;
 	}
+	public void setId(long id) {
+		this.id = id;
+	}
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+	
 	
 
 }
