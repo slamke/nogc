@@ -1,6 +1,6 @@
 package com.cffex.nogc.memory;
 /**
- * @author sunke
+ * @author sunke TaoZhou
  * @ClassName SegmentExcerpt
  * @Description: segment操作接口
  */
