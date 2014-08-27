@@ -1,5 +1,6 @@
 package com.cffex.nogc.memory;
 
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 
@@ -117,7 +118,16 @@ public class SegmentExcerpt extends AbstractSegmentExcerpt {
 	public void mergeCallback(){}
 	
 	protected boolean addBufferLog(BufferLog bufferLog){
-		return this.bufferOperatable.appendOperation(bufferLog);
+		ByteBuffer logBuffer = bufferLog.toBytebuffer();
+		int datalength = logBuffer.limit();
+		
+		boolean lockResult = this.bufferOperatable.tryLockWithLength(datalength);
+		System.out.println("datalength:"+datalength);
+		if (lockResult) {
+			return this.bufferOperatable.appendOperation(bufferLog);
+		}
+		return lockResult;
+		
 	}
 	protected void release(){
 		this.getSegment().release();

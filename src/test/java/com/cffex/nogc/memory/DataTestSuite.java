@@ -57,6 +57,8 @@ public class DataTestSuite {
 	        System.out.println(bytes.toString());
 	        return bytes;  
 	} 
+	
+	//public static void DataInsertTest
 	public static void main(String[] args){
 //		DataTestSuite dts = new DataTestSuite();
 //		SegmentExcerpt se = new SegmentExcerpt(IsolationType.RESTRICT);
@@ -83,6 +85,9 @@ public class DataTestSuite {
 		segmentExcerpt.getDataOperateable().insertDataWithIdRange(blockData, 1, 5);
 		
 		//segmentExcerpt.getItem(id, schemaKey);
+
+		//segmentExcerpt.getItem(id, "");
+
 		
 		
 	}
