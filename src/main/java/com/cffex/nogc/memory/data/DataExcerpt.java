@@ -132,7 +132,7 @@ public class DataExcerpt extends AbstractDataExcerpt{
 		int indexStartOffset = this.data.getIndexStartOffset();
 		int indexEndOffset = this.data.getIndexEndOffset();
 		int indexLength = indexEndOffset - indexStartOffset;
-		int newIndexEndOffset = Data.OFFSET+newNogcData.capacity();
+		int newIndexEndOffset = Data.OFFSET+newNogcData.limit();
 		int newIndexStartOffset = newIndexEndOffset - indexLength;
 		newNogcData.copyBytes(indexStartOffset, indexLength, newIndexStartOffset);//index区移动到最后
 		Data newData = new Data(newCapacity, newFreeSpace, this.data.getMaxId(), this.data.getMinId(), this.data.getCount(),newNogcData);
@@ -284,7 +284,7 @@ public class DataExcerpt extends AbstractDataExcerpt{
 	 */
 	@Override
 	protected void insertData(BlockData blockData, long minId, long maxId) {
-		if(isNeedResize(blockData.getDataBuffer().capacity()+blockData.getOffsetList().size()*Index.INDEX_ITEM_LENGTH)){
+		if(isNeedResize(blockData.getDataBuffer().limit()+blockData.getOffsetList().size()*Index.INDEX_ITEM_LENGTH)){
 			SegmentExcerpt newSegmentExcerpt = resizeData();
 			this.segmentExcerpt = newSegmentExcerpt;
 			this.data = ((DataExcerpt)newSegmentExcerpt.getDataOperateable()).data;
@@ -303,11 +303,11 @@ public class DataExcerpt extends AbstractDataExcerpt{
 		int minIdDataStartOffset = this.data.getDataItemStartOffset(minIdIndexOffset);//最小id的data offset
 		int maxIdDataStartOffset = this.data.getDataItemStartOffset(maxIdIndexOffset);//最大id的data offset
 		//大于maxid的data数据移动量
-		int dataOffsetIncrement = blockData.getDataBuffer().capacity() - (maxIdDataStartOffset - minIdDataStartOffset);
+		int dataOffsetIncrement = blockData.getDataBuffer().limit() - (maxIdDataStartOffset - minIdDataStartOffset);
 		//index区数据移动
 		copyLargerThanMaxIdIndex(maxIdIndexOffset, minIdIndexOffset, blockData.getOffsetList().size()*Index.INDEX_ITEM_LENGTH, dataOffsetIncrement);
 		//data区数据移动
-		copyLargerThanMaxIdData(maxIdIndexOffset, blockData.getDataBuffer().capacity(), dataOffsetIncrement);
+		copyLargerThanMaxIdData(maxIdIndexOffset, blockData.getDataBuffer().limit(), dataOffsetIncrement);
 		//data区插入
 		insertData(blockData.getDataBuffer().array(), minIdIndexOffset);
 		//index区插入

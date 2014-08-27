@@ -7,6 +7,7 @@
  */
 package com.cffex.nogc.memory;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import com.cffex.nogc.memory.SegmentOperateable;
@@ -26,6 +27,7 @@ public abstract class AbstractSegmentExcerpt implements SegmentOperateable {
 	public boolean insertItem(long id, byte[] value) {
 		// TODO Auto-generated method stub
 		BufferLog bufferLog = new BufferLog(BufferLogType.INSERT, id, value);
+
 		return addBufferLog(bufferLog);
 	}
 	/* (non-Javadoc)
