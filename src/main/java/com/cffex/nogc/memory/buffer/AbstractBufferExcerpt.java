@@ -12,8 +12,10 @@ import com.cffex.nogc.memory.NoGcByteBuffer;
 import com.cffex.nogc.memory.SegmentExcerpt;
 import com.cffex.nogc.memory.buffer.BufferLog.BufferLogCusor;
 import com.cffex.nogc.memory.buffer.BufferLog.BufferLogType;
-import com.cffex.nogc.memory.buffer.exception.BufferLogException;
 import com.cffex.nogc.memory.buffer.merge.TempBuffer;
+import com.cffex.nogc.serializable.PojoSerializable;
+import com.cffex.nogc.serializable.PojoSerializerFactory;
+import com.cffex.nogc.serializable.PojoSerializerFactory.PojoSerializerType;
 
 /**
  * @author sunke
@@ -80,7 +82,6 @@ public abstract class AbstractBufferExcerpt implements BufferOperatable {
 		// TODO Auto-generated method stub
 		int modCount = buffer.getModCount();
 		NoGcByteBuffer noGcByteBuffer = buffer.getNoGcByteBuffer();
-		noGcByteBuffer.flip();
 		BufferLogCusor cusor = new BufferLogCusor(noGcByteBuffer);
 		List<BufferLog> logs = new ArrayList<BufferLog>();
 		while (cusor.hasNext()) {
@@ -105,15 +106,14 @@ public abstract class AbstractBufferExcerpt implements BufferOperatable {
 	 * int)
 	 */
 	@Override
-	public final byte[] getPropertyById(long id, int index) {
+	public final byte[] getPropertyById(long id, int index,Class<?> clazz) {
 		// TODO Auto-generated method stub
 		int modCount = buffer.getModCount();
 		NoGcByteBuffer noGcByteBuffer = buffer.getNoGcByteBuffer();
-		noGcByteBuffer.flip();
 		BufferLogCusor cusor = new BufferLogCusor(noGcByteBuffer);
 		List<BufferLog> logs = new ArrayList<BufferLog>();
 		while (cusor.hasNext()) {
-			BufferLog log = cusor.next(id, index);
+			BufferLog log = cusor.next(id);
 			if (log != null) {
 				logs.add(log);
 			} else {
@@ -121,11 +121,21 @@ public abstract class AbstractBufferExcerpt implements BufferOperatable {
 			}
 		}
 		// 最后一条记录是最新的记录。
+
 		if (modCount == buffer.getModCount() && logs.size() > 0) {
-			return logs.get(logs.size() - 1).getValue();
-		} else {
-			return null;
+			for (int i = logs.size() -1;i > -1;i--) {
+				BufferLog bufferLog = logs.get(i);
+				if (bufferLog.getFlag() == BufferLogType.INSERT || bufferLog.getFlag() == BufferLogType.UPDATE_ALL) {
+					PojoSerializable serializable = PojoSerializerFactory.getSerializerByType(PojoSerializerType.CSON);
+					return serializable.getPropertyRawValueFromBinary(bufferLog.getValue(), clazz, index);
+				}else if (bufferLog.getFlag() == BufferLogType.UPDATE_PROPERTY){
+					if (bufferLog.getIndex() == index) {
+						return bufferLog.getValue();
+					}
+				}
+			}
 		}
+			return null;
 	}
 
 	/**

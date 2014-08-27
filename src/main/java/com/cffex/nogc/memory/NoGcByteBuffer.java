@@ -51,6 +51,11 @@ public class NoGcByteBuffer{
 	private long BYTES_OFFSET;
 	
 
+	public NoGcByteBuffer(int startPosition, int cap,DirectBuffer buffer,int lim,int position) {
+		this(startPosition, cap, buffer,lim);
+		position(position);
+	}
+	
 	public NoGcByteBuffer(int startPosition, int cap,DirectBuffer buffer,int lim) {
 		if (cap < 0)
             throw new IllegalArgumentException("Negative capacity: " + cap);
@@ -272,7 +277,7 @@ public class NoGcByteBuffer{
 	
 
 	public NoGcByteBuffer duplicate() {
-		return new NoGcByteBuffer(startPosition, capacity, buffer, limit);
+		return new NoGcByteBuffer(startPosition, capacity, buffer, limit,position);
 	}
 
 	/**
