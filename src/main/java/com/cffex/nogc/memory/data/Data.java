@@ -60,7 +60,7 @@ public class Data {
 	}
 	
 	protected int getFreesapce() {
-		return freespace;
+		return getCapacity()-(getDataEndOffset()-getDataStartOffset())-(this.index.getEndOffset()-this.index.getStartOffset());
 	}
 
 	protected void setFreesapce(int freesapce) {
@@ -234,21 +234,6 @@ public class Data {
 		
 	}
 	/**
-	 * @param minId
-	 */
-	protected void setMinId(long minId) {
-		// TODO Auto-generated method stub
-		this.index.setMinId(minId);
-	}
-	/**
-	 * @param maxId
-	 */
-	protected void setMaxId(long maxId) {
-		// TODO Auto-generated method stub
-		this.index.setMaxId(maxId);
-		
-	}
-	/**
 	 * @param minIdOffsetIndex
 	 * @return
 	 */
@@ -256,6 +241,18 @@ public class Data {
 		// TODO Auto-generated method stub
 		return this.getInt(minIdOffsetIndex-12);
 
+	}
+	protected NoGcByteBuffer getNoGcByteBuffer() {
+		return nogcData.duplicate();
+	}
+	/**
+	 * @param index
+	 * @param addoffset
+	 * @return
+	 */
+	public byte[] updateIndex(byte[] index, int addoffset) {
+		// TODO Auto-generated method stub
+		return this.index.update(index, addoffset);
 	}
 	
 	

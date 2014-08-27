@@ -28,14 +28,15 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 
 	protected SegmentExcerpt segmentExcerpt;
 	protected Data data;
-	protected Map<Thread, Integer> readingThreads = new HashMap<Thread, Integer>();
-	protected int writeAccesses    = 0;
-	protected int writeRequests    = 0;
-	protected Thread writingThread = null;
+//	protected Map<Thread, Integer> readingThreads = new HashMap<Thread, Integer>();
+//	protected int writeAccesses    = 0;
+//	protected int writeRequests    = 0;
+//	protected Thread writingThread = null;
 	protected DataReadWriteLock lock;
-	ReadWriteLock conLock = new ReentrantReadWriteLock(false); 
+	//ReadWriteLock conLock = new ReentrantReadWriteLock(false); 
 	public AbstractDataExcerpt(SegmentExcerpt segmentExcerpt, NoGcByteBuffer nogcData){
-		int capacity = Segment.DEFAULT_CAPACITY - Buffer.CAPACITY;
+		//int capacity = Segment.DEFAULT_CAPACITY - Buffer.CAPACITY;
+		int capacity = nogcData.capacity();
 		//NoGcByteBuffer noGcData = new NoGcByteBuffer(Buffer.CAPACITY, capacity, segmentExcerpt.getSegment().getByteBuffer());
 		this.data = new Data(capacity, capacity, 0, 0, 0,nogcData);
 		this.segmentExcerpt = segmentExcerpt;
@@ -110,9 +111,9 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 	 * @see com.cffex.nogc.memory.data.DataOperateable#getPropertyById(long, int)
 	 */
 	@Override
-	public byte[] getPropertyById(long id, int index) {
+	public byte[] getPropertyById(long id, int index, String schemaKey) {
 		// TODO Auto-generated method stub
-		return getDataPropertyById(id, index);
+		return getDataPropertyById(id, index, schemaKey);
 	}
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.data.DataOperateable#getDataWithIdRange(long, long)
@@ -134,9 +135,7 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.data.DataOperateable#insertDataWithIdRange(byte[], byte[], long, long)
-	 */
+
 	@Override
 	public final void insertDataWithIdRange(byte[] dataBytes, byte[] indexBytes, long minId,
 			long maxId) {
@@ -144,9 +143,7 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 		insertData(dataBytes, indexBytes, minId, maxId);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.data.DataOperateable#insertDataWithIdRange(byte[], byte[], long, long)
-	 */
+
 	@Override
 	public final void insertDataWithIdRange(byte[] dataBytes, IndexItem[] indexItems, long minId,
 			long maxId) {
@@ -154,9 +151,7 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 		insertData(dataBytes, indexItems, minId, maxId);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.data.DataOperateable#insertDataWithIdRange(com.cffex.nogc.memory.data.BlockData, long, long)
-	 */
+
 	@Override
 	public int insertDataWithIdRange(BlockData blockData, long minId, long maxId) {
 		// TODO Auto-generated method stub
@@ -164,10 +159,14 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 		return 0;
 	}
 	
+	@Override
+	public void insertData(BlockData blockData, long minId, long maxId, boolean readonly){
+		if(readonly){
+			insertData(blockData, minId, maxId);
+		}
+	}
+	
 
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.data.DataOperateable#insertData(byte[], byte[], boolean)
-	 */
 	@Override
 	public void insertData(byte[] dataBytes, IndexItem[] indexItems, long miId, long maxId, boolean readonly) {
 		// TODO Auto-generated method stub
@@ -176,9 +175,7 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.data.DataOperateable#insertData(byte[], byte[], boolean)
-	 */
+
 	@Override
 	public void insertData(byte[] dataBytes,  byte[] indexBytes , long miId, long maxId, boolean readonly) {
 		// TODO Auto-generated method stub
@@ -187,15 +184,6 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.cffex.nogc.memory.data.DataOperateable#resize()
-	 */
-	@Override
-	public final SegmentExcerpt resize() {
-		// TODO Auto-generated method stub
-		resizeData();
-		return null;
-	}
 	
 	
 	
@@ -209,7 +197,7 @@ public abstract class AbstractDataExcerpt implements DataOperateable {
 		
 	protected abstract byte[] getDataById(long id);
 	
-	protected abstract byte[] getDataPropertyById(long id, int index);
+	protected abstract byte[] getDataPropertyById(long id, int index, String schemaKey);
 	
 	/*
 	 * index(id+offset)

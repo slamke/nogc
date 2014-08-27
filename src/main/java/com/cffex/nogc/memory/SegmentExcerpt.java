@@ -30,6 +30,7 @@ public class SegmentExcerpt extends AbstractSegmentExcerpt {
 	 * 隔离级别 
 	 */
 	private IsolationType isolationType;
+	
 	/**
 	 * 段数据
 	 */
@@ -59,8 +60,30 @@ public class SegmentExcerpt extends AbstractSegmentExcerpt {
 		this.bufferOperatable = new BufferExcerpt(this,nogcBuffer);
 	}
 	
+	public SegmentExcerpt(IsolationType isolationType, Segment segment, NoGcByteBuffer nogcData, NoGcByteBuffer nogcBuffer) {
+		super();
+
+		this.segment = segment;
+		this.isolationType = isolationType;
+		this.dataOperateable = new DataExcerpt(this,nogcData);
+		this.bufferOperatable = new BufferExcerpt(this,nogcBuffer);
+	}
+	
+	public SegmentExcerpt(IsolationType isolationType, Segment segment, Data data, Buffer buffer) {
+		super();
+
+		this.segment = segment;
+		this.isolationType = isolationType;
+		this.dataOperateable = new DataExcerpt(this,data);
+		this.bufferOperatable = new BufferExcerpt(this,buffer.getNoGcByteBuffer());
+	}
+	
 	public Segment getSegment() {
 		return segment;
+	}
+
+	public IsolationType getIsolationType() {
+		return isolationType;
 	}
 
 
@@ -83,7 +106,10 @@ public class SegmentExcerpt extends AbstractSegmentExcerpt {
 		return segment.isReadonly();
 	}
 	public DataOperateable getDataOperateable(){
-		return null;
+		return this.dataOperateable;
+	}
+	public BufferOperatable getBufferOperateable(){
+		return this.bufferOperatable;
 	}
 	/**
 	 * TODO MERGE时，根据隔离级别设置lock
@@ -161,8 +187,7 @@ public class SegmentExcerpt extends AbstractSegmentExcerpt {
 	@Override
 	protected byte[] getItemPropertyInData(long id, int index, String schemaKey) {
 		// TODO Auto-generated method stub
-		DataItem dataItem = new DataItem(id, this.dataOperateable.getById(id), schemaKey);
-		return dataItem.getValue(index);
+		return this.dataOperateable.getPropertyById(id, index, schemaKey);
 	}
 
 

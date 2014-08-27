@@ -25,7 +25,7 @@ public class DataReadWriteLock {
 	/**
 	 * 原子boolean类型，用来实现spinlock
 	 */
-	private AtomicBoolean lock;
+	private AtomicBoolean lock = new AtomicBoolean(false);
 	
 	/**
 	 * spin lock的time_out时间，尝试10次

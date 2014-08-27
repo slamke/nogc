@@ -10,6 +10,8 @@ package com.cffex.nogc.memory.data;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,55 +48,56 @@ public class Index {
 		this.maxId = maxId;
 		this.startOffset = indexStartOffset;
 		this.endOffset = indexStartOffset + INDEX_ITEM_LENGTH*this.count;
-//		indexObjects = new Object[this.count*2];
-//		for(int i = 0; i < this.count; i++){
-//			indexObjects[i*2] = this.nogcIndex.getLong(startOffset+INDEX_ITEM_LENGTH*i);
-//			indexObjects[i*2+1] = this.nogcIndex.getLong(startOffset+INDEX_ITEM_LENGTH*i+ID_LENGTH);
-//		}
 	}
 	/**
-	 * @param index
+	 * @param index数组（id+offset），id按从大到小排列，和存储顺序一致
 	 * @param addoffset
 	 * @return
 	 */
-	public byte[] update(byte[] index, int addoffset) {
+	protected byte[] update(byte[] index, int addoffset) {
+		ByteBuffer buf = ByteBuffer.allocate(index.length).order(ByteOrder.LITTLE_ENDIAN);
+		buf.put(buf);
+		buf.flip();
 		int size = index.length/12;
+		byte[] b = new byte[index.length];
+		byte[] intbyte = new byte[Index.OFFSET_LENGTH];
 		for(int i = 0; i<size; i++){
-			int newoffset = nogcIndex.getInt(size*ID_LENGTH)+addoffset;
-			index[12*i] = (byte) ((newoffset >> 24) & 0xFF);
-			index[12*i+1] = (byte) ((newoffset >> 16) & 0xFF);
-			index[12*i+2] = (byte) ((newoffset >> 8)  & 0xFF);
-			index[12*i+3] = (byte) (newoffset& 0xFF);
+			int newoffset = buf.getInt(i*Index.INDEX_ITEM_LENGTH+Index.ID_LENGTH)+addoffset;
+			try {
+				intbyte = objectToBytes(newoffset);
+				System.arraycopy(index, Index.INDEX_ITEM_LENGTH*size, b, i*12, 8);
+				System.arraycopy(intbyte, 0, b, i*12+8, 4);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
-		byte[] result = new byte[index.length];
-		for(int i = 0; i<size; i++){
-			System.arraycopy(index, index.length-Index.INDEX_ITEM_LENGTH*size, result, i*12, 8);
-			System.arraycopy(index, index.length-Index.OFFSET_LENGTH*size, result, i*12+8, 4);
-		}
-		return result;
+		return b;
 	}
-	public int getStartOffset() {
+	protected int getStartOffset() {
 		return startOffset;
 	}
-	public int getEndOffset() {
+	protected int getEndOffset() {
 		return endOffset;
 	}
-	public long getMinId() {
-		return minId;
+	protected long getMinId() {
+		return nogcIndex.getLong(getIndexEndOffset()-INDEX_ITEM_LENGTH);
+		//return minId;
 	}
-	public long getMaxId() {
-		return maxId;
+	protected long getMaxId() {
+		return nogcIndex.getLong(getIndexStartOffset());
 	}
-	public int getCount() {
+	protected int getCount() {
 		return count;
 	}
-	public NoGcByteBuffer getNogcIndex() {
+	protected NoGcByteBuffer getNogcIndex() {
 		return nogcIndex;
 	}
 	/**
 	 * 
 	 */
-	public void updateCount() {
+	protected void updateCount() {
 		// TODO Auto-generated method stub
 		this.count = this.count + 1;
 		
@@ -246,7 +249,7 @@ public class Index {
 		for(int i = 0; i<offstList.size(); i++){
 			try {
 				longbyte = objectToBytes(offstList.get(i).getId());
-				intbyte = objectToBytes(offstList.get(i).getOffset());
+				intbyte = objectToBytes(offstList.get(i).getOffset()+minIdDataOffset);
 				System.arraycopy(longbyte, 0, indexBytes, i*12, 8);
 				System.arraycopy(intbyte, 0, indexBytes, i*12+8, 4);
 			} catch (IOException e) {
@@ -254,9 +257,9 @@ public class Index {
 				e.printStackTrace();
 			}
 		}
-		byte[] tempIndexBytes = update(indexBytes, minIdDataOffset);
+		//byte[] tempIndexBytes = update(indexBytes, minIdDataOffset);
 		int newIndexStartOffset = minIdIndexOffset - indexBytes.length;
-		putBytes(tempIndexBytes, newIndexStartOffset);
+		putBytes(indexBytes, newIndexStartOffset);
 		
 	}
 	//read bytes
@@ -330,18 +333,6 @@ public class Index {
 	}
 	private void putInt(Integer offset, int value){
 		nogcIndex.putInt(offset, value);
-	}
-	/**
-	 * @param minId
-	 * @return
-	 */
-	public void setMinId(long minId) {
-		// TODO Auto-generated method stub
-		this.minId = minId;
-	}
-	public void setMaxId(long maxId) {
-		// TODO Auto-generated method stub
-		this.maxId = maxId;
 	}
 	/**
 	 * @param minIndexOffset
