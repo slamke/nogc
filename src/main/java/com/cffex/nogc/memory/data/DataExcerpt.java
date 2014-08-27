@@ -304,8 +304,9 @@ public class DataExcerpt extends AbstractDataExcerpt{
 		int maxIdDataStartOffset = this.data.getDataItemStartOffset(maxIdIndexOffset);//最大id的data offset
 		//大于maxid的data数据移动量
 		int dataOffsetIncrement = blockData.getDataBuffer().limit() - (maxIdDataStartOffset - minIdDataStartOffset);
+		int indexOffsetIncrement = blockData.getOffsetList().size() * Index.INDEX_ITEM_LENGTH - (minIdIndexOffset - maxIdIndexOffset + Index.INDEX_ITEM_LENGTH);
 		//index区数据移动
-		copyLargerThanMaxIdIndex(maxIdIndexOffset, minIdIndexOffset, blockData.getOffsetList().size()*Index.INDEX_ITEM_LENGTH, dataOffsetIncrement);
+		copyLargerThanMaxIdIndex(maxIdIndexOffset, minIdIndexOffset, blockData.getOffsetList().size()*Index.INDEX_ITEM_LENGTH, indexOffsetIncrement);
 		//data区数据移动
 		copyLargerThanMaxIdData(maxIdIndexOffset, blockData.getDataBuffer().limit(), dataOffsetIncrement);
 		//data区插入
@@ -348,9 +349,9 @@ public class DataExcerpt extends AbstractDataExcerpt{
 	 * @param dataOffsetIncrement 
 	 * @param maxId
 	 */
-	private void copyLargerThanMaxIdIndex(int maxIdOffsetIndex, int minIdOffsetIndex, int indexLength, int dataOffsetIncrement) {
+	private void copyLargerThanMaxIdIndex(int maxIdOffsetIndex, int minIdOffsetIndex, int indexLength, int indexOffsetIncrement) {
 		// TODO Auto-generated method stub
-		this.data.getIndex().copyLargerThanMaxIdIndex(maxIdOffsetIndex, minIdOffsetIndex, indexLength, dataOffsetIncrement);
+		this.data.getIndex().copyLargerThanMaxIdIndex(maxIdOffsetIndex, minIdOffsetIndex, indexLength, indexOffsetIncrement);
 	}
 	/* (non-Javadoc)
 	 * @see com.cffex.nogc.memory.data.AbstractDataExcerpt#binarySearchById(long)

@@ -62,7 +62,7 @@ public class Index {
 		byte[] b = new byte[index.length];
 		byte[] intbyte = new byte[Index.OFFSET_LENGTH];
 		for(int i = 0; i<size; i++){
-			int newoffset = buf.getInt(i*Index.INDEX_ITEM_LENGTH+Index.ID_LENGTH)+addoffset;
+			int newoffset = buf.getInt(i*Index.INDEX_ITEM_LENGTH+Index.ID_LENGTH) - addoffset;
 			try {
 				intbyte = objectToBytes(newoffset);
 				System.arraycopy(index, Index.INDEX_ITEM_LENGTH*size, b, i*12, 8);
@@ -175,14 +175,14 @@ public class Index {
 	
 	
 	protected void copyLargerThanMaxIdIndex(int maxIdOffsetIndex, int minIdOffsetIndex, int indexLength,
-			int dataOffsetIncrement) {
+			int indexOffsetIncrement) {
 		// TODO Auto-generated method stub
 		int startOffset = getIndexStartOffset();
 		int copyLength = maxIdOffsetIndex-startOffset;
 		byte[] largerThanMaxIndex = getBytes(startOffset, copyLength);
-		update(largerThanMaxIndex, dataOffsetIncrement);
-		int oldLength = minIdOffsetIndex - maxIdOffsetIndex;
-		int desOffset = startOffset - (indexLength - oldLength);
+		update(largerThanMaxIndex, indexOffsetIncrement);
+		//int oldLength = minIdOffsetIndex - maxIdOffsetIndex;
+		int desOffset = startOffset - indexOffsetIncrement;
 		putBytes(largerThanMaxIndex, desOffset);
 	}
 	
