@@ -14,6 +14,12 @@ import com.cffex.nogc.serializable.PojoSerializerFactory;
  */
 public class BufferLog {
 	
+	/**
+	 * buffer操作的四种类型
+	 * @author sunke
+	 * @ClassName BufferLogType
+	 * @Description: TODO
+	 */
 	public static enum BufferLogType{
 		INSERT(0),
 		DELETE(1),
@@ -26,6 +32,7 @@ public class BufferLog {
 		public byte getValue(){
 			return value;
 		}
+		
 		private BufferLogType(int value){
 			this.value = (byte)value;
 		}

@@ -61,7 +61,7 @@ public class CSONDocument implements IEntityRandomAccess, IEntitySequenceAccess 
     }
     @Override public byte[] getRawValue(Object index,boolean needTypeCode){
         try {
-            docBody.getRawValue(index, needTypeCode);
+            return docBody.getRawValue(index, needTypeCode);
         }catch (Exception e){
             e.printStackTrace();
         }

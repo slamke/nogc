@@ -7,6 +7,7 @@ package com.cffex.nogc.memory;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import org.junit.After;
@@ -86,14 +87,21 @@ public class BufferTestSuite {
 		insertPojo.setAge(24);
 		insertPojo.setId(8888);
 		insertPojo.setName("updated...");
+		byte[] newName = "updated...".getBytes(Charset.forName("utf-8"));
+		for (int i = 0; i < newName.length; i++) {
+			System.out.print(" "+newName[i]);
+		}
 		
 		ByteBuffer newBuffer = CSONHelper.serializeObjectToCSON(insertPojo, Pojo.class);
 		byte[] idProperty = CSONHelper.getPropertyRawValueByIndex(newBuffer, 2, Pojo.class);
-		byte[] nameProperty = CSONHelper.getPropertyRawValueByIndex(newBuffer, 3, Pojo.class);
+		
+		System.out.println("idProperty:"+idProperty.toString());
+		newBuffer.rewind();
+		byte[] nameProperty = CSONHelper.getPropertyRawValueByIndex(newBuffer, 1, Pojo.class);
 		
 		BufferLog propertyIdLog = new BufferLog(BufferLogType.UPDATE_PROPERTY, 123, idProperty, 2, Pojo.class.toString()); 
 		
-		BufferLog propertyNameLog = new BufferLog(BufferLogType.UPDATE_PROPERTY, 123, nameProperty, 3, Pojo.class.toString()); 
+		BufferLog propertyNameLog = new BufferLog(BufferLogType.UPDATE_PROPERTY, 123, nameProperty, 1, Pojo.class.toString()); 
 		
 		lockResult = operatable.tryLockWithLength(propertyIdLog.toBytebuffer().limit());
 		if (lockResult) {
@@ -105,9 +113,25 @@ public class BufferTestSuite {
 			operatable.appendOperation(propertyNameLog);
 		}
 		
-		byte[] agebinary = operatable.getPropertyById(123, 1, Pojo.class);
+		byte[] agebinary = operatable.getPropertyById(123, 0, Pojo.class);
+		
 		byte[] idbinary = operatable.getPropertyById(123, 2, Pojo.class);
-		byte[] namebinary = operatable.getPropertyById(123, 3, Pojo.class);
+		byte[] namebinary = operatable.getPropertyById(123, 1, Pojo.class);
+		ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[100]).order(ByteOrder.LITTLE_ENDIAN);
+		byteBuffer.put(agebinary);
+		System.out.println("age:"+byteBuffer.getInt(1));
+		byteBuffer.rewind();
+		byteBuffer.put(idbinary);
+		System.out.println("id:"+byteBuffer.getInt(1));
+		byteBuffer.rewind();
+		byteBuffer.put(namebinary);
+		byte[] value = new byte[namebinary.length-5];
+		for (int i = 0; i < value.length; i++) {
+			value[i] = namebinary[i+5];
+			System.out.print(" "+value[i]);
+		}
+		
+		System.out.println("name:"+new String(value, Charset.forName("utf-8")));
 		
 	}
 	

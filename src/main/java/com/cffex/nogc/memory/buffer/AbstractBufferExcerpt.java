@@ -93,7 +93,23 @@ public abstract class AbstractBufferExcerpt implements BufferOperatable {
 			}
 		}
 		if (modCount == buffer.getModCount()) {
-			return logs;
+			List<BufferLog> res = new ArrayList<BufferLog>();
+			if (logs != null) {
+				for (int i = logs.size()-1; i > -1 ; i--) {
+					BufferLog log = logs.get(i);
+					//已拿到最新数据
+					if (log.getFlag() == BufferLogType.UPDATE_ALL || log.getFlag() == BufferLogType.INSERT
+							||log.getFlag() == BufferLogType.DELETE) {
+						res.add(log);
+						break;
+					}
+					//部分数据
+					else {
+						res.add(log);
+					}
+				}
+			}
+			return res;
 		} else {
 			return null;
 		}

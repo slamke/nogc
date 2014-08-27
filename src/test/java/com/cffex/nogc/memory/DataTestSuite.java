@@ -82,7 +82,7 @@ public class DataTestSuite {
 		BlockData blockData = new BlockData(offsetList, dataBuffer);
 		segmentExcerpt.getDataOperateable().insertDataWithIdRange(blockData, 1, 5);
 		
-		segmentExcerpt.getItem(id, schemaKey);
+		//segmentExcerpt.getItem(id, schemaKey);
 		
 		
 	}

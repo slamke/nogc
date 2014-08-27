@@ -22,6 +22,8 @@ import com.cffex.nogc.memory.buffer.BufferLog.BufferLogType;
 import com.cffex.nogc.memory.buffer.BufferLogComparator;
 import com.cffex.nogc.memory.buffer.exception.IllegalBufferMergeException;
 import com.cffex.nogc.memory.buffer.exception.TempBufferException;
+import com.cffex.nogc.memory.utils.MemoryTool;
+import com.cffex.nogc.memory.utils.PotentialProblem;
 
 /**
  * @author sunke
@@ -92,6 +94,7 @@ public class TempBuffer extends Buffer{
 	 * 遍历dirctBuffer中的内容，计算最大Id和最小Id，形成未处理的insertIndexList和updateIndexList
 	 * @return 新构建的TempBuffer
 	 */
+	@PotentialProblem(reason="将tempbuffer的数据遍历完成后，可以直接释放tempbuffer。")
 	public TempBuffer preperation(){
 		BufferLogCusor cusor = new BufferLogCusor(noGcByteBuffer);
 		List<BufferLog> unhandledInsert = new ArrayList<BufferLog>();
@@ -108,6 +111,7 @@ public class TempBuffer extends Buffer{
 			minId = Math.min(minId, log.getId());
 			maxId = Math.max(maxId, log.getId());
 		}
+		
 		return new TempBuffer(unhandledInsert, unhandledUpdate, minId, maxId);
 	}
 	
