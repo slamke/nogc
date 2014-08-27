@@ -53,7 +53,7 @@ public class Buffer {
 	 */
 	public int updateLengthWithIncrement(int increment) {
 		int v = length;
-        length = length + v;
+        length = length + increment;
         return v;
 	}
 	
@@ -90,8 +90,16 @@ public class Buffer {
 	public void writeBytes(byte[] value,int offset){
 		noGcByteBuffer.putBytes(offset, value);
 	}
-	
+	/**
+	 * buffer自带的noGcByteBuffer，因为通过多线程使用，所以需要duplicate一个，供查阅时使用。另外，因为多线程的原因，noGcByteBuffer
+	 * 的position的位置是不定的，需要手动设置为length。
+	 * @return noGcByteBuffer的副本，已经flip
+	 */
 	public NoGcByteBuffer getNoGcByteBuffer(){
-		return noGcByteBuffer.duplicate();
+		NoGcByteBuffer duplicate = noGcByteBuffer.duplicate();
+		duplicate.position(length);
+		duplicate.flip();
+		return duplicate;
+		
 	}
 }

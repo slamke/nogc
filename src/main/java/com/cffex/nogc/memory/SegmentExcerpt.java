@@ -85,6 +85,12 @@ public class SegmentExcerpt extends AbstractSegmentExcerpt {
 	public IsolationType getIsolationType() {
 		return isolationType;
 	}
+
+
+	public BufferOperatable getBufferOperatable() {
+		return bufferOperatable;
+	}
+
 	/**
 	 * 将buffer区获取的operation与data区中的数据进行merge
 	 * @return merge后的结果

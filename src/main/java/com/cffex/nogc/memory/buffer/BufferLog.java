@@ -121,7 +121,7 @@ public class BufferLog {
 	 * 插入：item的整体数据
 	 * 删除：null
 	 * 更新全部：item的整体数据
-	 * 更新属性：data
+	 * 更新属性：data-->rawValue
 	 */
 	private byte[] value;
 	/**
@@ -162,6 +162,15 @@ public class BufferLog {
 		this.schemaKey = schemaKey;
 	}
 	
+	
+	
+	/**
+	 * 无参构造函数-->使用cson序列化的必要条件
+	 */
+	public BufferLog() {
+		super();
+	}
+
 	public int getIndex(){
 		return this.index;
 	}

@@ -43,5 +43,5 @@ public interface BufferOperatable {
 	 */
 	@PotentialProblem(reason="对于buffer进行读取，不进行加锁，与写进行并行；每次写数据时，先更新buffer的长度",
 			problem="读取的数据可能会读取到尚未完全写入的数据")
-	public byte[] getPropertyById(long id, int index);
+	public byte[] getPropertyById(long id, int index,Class<?> clazz);
 }

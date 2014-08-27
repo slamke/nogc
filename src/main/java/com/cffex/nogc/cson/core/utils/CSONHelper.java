@@ -24,7 +24,7 @@ public class CSONHelper {
 	}
 
 	/**
-	 * 将object使用cson进行序列化，结果保存在比亚特buffer中
+	 * 将object使用cson进行序列化，结果保存在ByteBuffer中
 	 * @param object 待序列化的object 
 	 * @param clazz object的clazz类型
 	 * @return 序列化的结果-->flip:postion set zero.
@@ -38,6 +38,25 @@ public class CSONHelper {
 				.writeObjectToCSON(object, outBuffer);
 		buffer.second.flip();
 		return buffer.second;
+	}
+	
+	/**
+	 * 将object使用cson进行序列化，结果保存在byte数组中
+	 * @param object 待序列化的object 
+	 * @param clazz object的clazz类型
+	 * @return 序列化的结果
+	 */
+	public static byte[] serializeObjectToCSONBinary(Object object, Class<?> clazz) {
+		GeneralEntityToCSON serializer = EntitySerializerCache
+				.getEntityToCSON(clazz);
+		ByteBuffer outBuffer = ByteBuffer.wrap(new byte[4096]).order(
+				ByteOrder.LITTLE_ENDIAN);
+		Tuple<IEntityRandomAccess, ByteBuffer> buffer = serializer
+				.writeObjectToCSON(object, outBuffer);
+		buffer.second.flip();
+		byte[] res = new byte[buffer.second.limit()];
+		buffer.second.get(res);
+		return res;
 	}
 
 	/**
@@ -82,7 +101,7 @@ public class CSONHelper {
 	 * @param clazz
 	 * @return
 	 */
-	public byte[] getPropertyBinaryByIndex(ByteBuffer byteBuffer, int index,Class<?> clazz) {
+	public static byte[] getPropertyBinaryByIndex(ByteBuffer byteBuffer, int index,Class<?> clazz) {
 		CSONDocument document = new CSONDocument(EntitySchemaCache.objectSchemaFactory(clazz), byteBuffer);
 		return document.getRawValue(index,false);
 	}
