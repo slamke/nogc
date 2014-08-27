@@ -43,9 +43,9 @@ public class DataExcerpt extends AbstractDataExcerpt{
 		super(segmentExcerpt, nogcData);
 
 	}
-	public Data getData() {
-		return data;
-	}
+//	public Data getData() {
+//		return data;
+//	}
 	//private methods to implement functions in DataOperateable
 	
 	
@@ -69,15 +69,10 @@ public class DataExcerpt extends AbstractDataExcerpt{
 	 */
 	//未完成，需要结合cson实现，找到object的第几个属性和offset的对应关系
 	@Override
-	protected byte[] getDataPropertyById(long id, int index) {
+	protected byte[] getDataPropertyById(long id, int index, String schemaKey) {
 		// TODO Auto-generated method stub
-		int offset = getOffsetById(id);
-		if(offset < 0){
-			return null;
-		}else{
-			//todo
-			return this.data.getDataByOffset(offset);
-		}
+		DataItem dataItem = new DataItem(id, getDataById(id), schemaKey);
+		return dataItem.getValue(index);
 	}
 	
 	/*
@@ -119,32 +114,32 @@ public class DataExcerpt extends AbstractDataExcerpt{
 			return 1;
 		}
 	}
-	
+	private boolean isNeedResize(int insertSize){
+		if(this.data.getCapacity()<insertSize+this.data.getFreesapce()+this.data.THRESHOLD){
+			return true;
+		}else{
+			return false;
+		}
+	}
 	protected SegmentExcerpt resizeData(){
 		
-		int newCapacity = (int) (data.getCapacity()*Segment.DEFAULT_REACTOR);
+		int newCapacity = (int) (data.getCapacity()*Segment.DEFAULT_REACTOR);//扩容后大小
 		int newFreeSpace = newCapacity - (this.data.getCapacity()-this.data.getFreesapce());
 		Segment newSegment = new Segment(newCapacity);
-		SegmentExcerpt newsegmentExcerpt = new SegmentExcerpt(IsolationType.RESTRICT);
-		NoGcByteBuffer newNoGcData = new NoGcByteBuffer(Buffer.CAPACITY, newCapacity, newsegmentExcerpt.getSegment().getByteBuffer());
 		
-		Data newData = new Data(newCapacity, newFreeSpace, this.data.getMaxId(), this.data.getMinId(), this.data.getCount(),newNoGcData);
-		DataExcerpt newDataExcerpt = new DataExcerpt(newsegmentExcerpt,newData);
-		
-		int segmentStartOffset = 0;
-		
+		NoGcByteBuffer newNogcBuffer = new NoGcByteBuffer(0, Buffer.CAPACITY, this.segmentExcerpt.getSegment().getByteBuffer());
+		NoGcByteBuffer newNogcData = new NoGcByteBuffer(Buffer.CAPACITY, newCapacity, this.segmentExcerpt.getSegment().getByteBuffer());
 		int indexStartOffset = this.data.getIndexStartOffset();
 		int indexEndOffset = this.data.getIndexEndOffset();
 		int indexLength = indexEndOffset - indexStartOffset;
-		
-		int dataStartOffset = this.data.getDataStartOffset();
-		int dataEndOffset = this.data.getDataEndOffset();
-		int bufferAndDataLength = dataEndOffset - dataStartOffset;
-		
-		int newSegmentStartOffset = 0;
-		int newIndexEndOffset = newData.getIndexEndOffset();
+		int newIndexEndOffset = Data.OFFSET+newNogcData.capacity();
 		int newIndexStartOffset = newIndexEndOffset - indexLength;
-
+		newNogcData.copyBytes(indexStartOffset, indexLength, newIndexStartOffset);//index区移动到最后
+		Data newData = new Data(newCapacity, newFreeSpace, this.data.getMaxId(), this.data.getMinId(), this.data.getCount(),newNogcData);
+		Buffer newBuffer = new Buffer(newNogcBuffer);
+		
+		SegmentExcerpt newsegmentExcerpt = new SegmentExcerpt(this.segmentExcerpt.getIsolationType(),newSegment,newData, newBuffer);
+		MemoryTool.free((ByteBuffer) this.segmentExcerpt.getSegment().getByteBuffer());
 		return newsegmentExcerpt;
 	}
 	
@@ -154,24 +149,10 @@ public class DataExcerpt extends AbstractDataExcerpt{
 
 	//更新index中的offset值
 	private byte[] updateIndex(byte[] index, int addoffset){
-		return this.data.getIndex().update(index ,addoffset);
+		return this.data.updateIndex(index ,addoffset);
 		
 		
 	}
-	private int updateIndexData(byte[] index, int addoffset){
-		return 0;
-	}
-	
-	
-	
-
-	
-
-
-
-
-	
-
 
 
 	@Override
@@ -198,7 +179,7 @@ public class DataExcerpt extends AbstractDataExcerpt{
 		//最后一个data结束的位置
 		int maxIdDataEndOffset = this.data.getDataItemEndOffset(maxIdDataStartOffset);
 		byte[] dataBytes = this.data.getDatas(minIdDataStartOffset, maxIdDataEndOffset);
-		ByteBuffer buf = ByteBuffer.allocate(dataBytes.length);
+		ByteBuffer buf = ByteBuffer.allocate(dataBytes.length).order(ByteOrder.LITTLE_ENDIAN);
 		buf.put(dataBytes);
 		buf.flip();
 		List<IndexItem> offsetList = this.data.getIndex().getOffsetList(minIdIndexOffset, maxIdIndexOffset,minIdDataStartOffset);
@@ -209,6 +190,11 @@ public class DataExcerpt extends AbstractDataExcerpt{
 	
 	@Override
 	protected void insertData(byte[] dataBytes, byte[] indexBytes, long minId, long maxId) {
+		if(isNeedResize(dataBytes.length+indexBytes.length)){
+			SegmentExcerpt newSegmentExcerpt = resizeData();
+			this.segmentExcerpt = newSegmentExcerpt;
+			this.data = ((DataExcerpt)newSegmentExcerpt.getDataOperateable()).data;
+		}
 		// TODO Auto-generated method stub
 		if(indexBytes == null||dataBytes==null){
 			try {
@@ -218,13 +204,6 @@ public class DataExcerpt extends AbstractDataExcerpt{
 				e.printStackTrace();
 			}
 		}
-		if(minId<this.data.getMinId()){
-			this.data.setMinId(minId);
-		}
-		if(maxId > this.data.getMaxId()){
-			this.data.setMaxId(maxId);
-		}
-
 		int maxIdIndexOffset = findIdOffset(maxId);
 		int minIdIndexOffset = findIdOffset(minId);
 		int minIdDataStartOffset = this.data.getDataItemStartOffset(minIdIndexOffset);//最小id的data offset
@@ -260,6 +239,11 @@ public class DataExcerpt extends AbstractDataExcerpt{
 	@Override
 	protected void insertData(byte[] dataBytes, IndexItem[] indexItems,
 			long minId, long maxId) {
+		if(isNeedResize(dataBytes.length+indexItems.length*Index.INDEX_ITEM_LENGTH)){
+			SegmentExcerpt newSegmentExcerpt = resizeData();
+			this.segmentExcerpt = newSegmentExcerpt;
+			this.data = ((DataExcerpt)newSegmentExcerpt.getDataOperateable()).data;
+		}
 		if(indexItems.length<1){
 			try {
 				throw new DataException("datas in index array is not enough!!!");
@@ -267,12 +251,6 @@ public class DataExcerpt extends AbstractDataExcerpt{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
-		if(minId<this.data.getMinId()){
-			this.data.setMinId(minId);
-		}
-		if(maxId > this.data.getMaxId()){
-			this.data.setMaxId(maxId);
 		}
 
 		int maxIdIndexOffset = findIdOffset(maxId);
@@ -306,6 +284,11 @@ public class DataExcerpt extends AbstractDataExcerpt{
 	 */
 	@Override
 	protected void insertData(BlockData blockData, long minId, long maxId) {
+		if(isNeedResize(blockData.getDataBuffer().capacity()+blockData.getOffsetList().size()*Index.INDEX_ITEM_LENGTH)){
+			SegmentExcerpt newSegmentExcerpt = resizeData();
+			this.segmentExcerpt = newSegmentExcerpt;
+			this.data = ((DataExcerpt)newSegmentExcerpt.getDataOperateable()).data;
+		}
 		// TODO Auto-generated method stub
 		if(blockData.getOffsetList().size()<1){
 			try {
@@ -315,13 +298,6 @@ public class DataExcerpt extends AbstractDataExcerpt{
 				e.printStackTrace();
 			}
 		}
-		if(minId<this.data.getMinId()){
-			this.data.setMinId(minId);
-		}
-		if(maxId > this.data.getMaxId()){
-			this.data.setMaxId(maxId);
-		}
-
 		int maxIdIndexOffset = findIdOffset(maxId);
 		int minIdIndexOffset = findIdOffset(minId);
 		int minIdDataStartOffset = this.data.getDataItemStartOffset(minIdIndexOffset);//最小id的data offset

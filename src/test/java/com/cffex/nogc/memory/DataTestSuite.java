@@ -9,10 +9,16 @@ package com.cffex.nogc.memory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.cffex.nogc.enumeration.IsolationType;
+import com.cffex.nogc.memory.data.BlockData;
 import com.cffex.nogc.memory.data.DataExcerpt;
 import com.cffex.nogc.memory.data.DataOperateable;
+import com.cffex.nogc.memory.data.Index;
+import com.cffex.nogc.memory.data.IndexItem;
 
 /**
  * @author zhou
@@ -61,7 +67,23 @@ public class DataTestSuite {
 		//de.insertData(newData, newIndex, miId, maxId, readonly)
 		
 		SegmentExcerpt segmentExcerpt = new SegmentExcerpt(IsolationType.RESTRICT);
-		segmentExcerpt.getSegment();
+		ByteBuffer dataBuffer = ByteBuffer.allocate(200);
+		IndexItem indexItem1 = new IndexItem(1,0);
+		IndexItem indexItem2 = new IndexItem(2,10);
+		IndexItem indexItem3 = new IndexItem(3,30);
+		IndexItem indexItem4 = new IndexItem(4,50);
+		IndexItem indexItem5 = new IndexItem(5,100);
+		List<IndexItem> offsetList = new ArrayList<IndexItem>();
+		offsetList.add(indexItem1);
+		offsetList.add(indexItem2);
+		offsetList.add(indexItem3);
+		offsetList.add(indexItem4);
+		offsetList.add(indexItem5);
+		BlockData blockData = new BlockData(offsetList, dataBuffer);
+		segmentExcerpt.getDataOperateable().insertDataWithIdRange(blockData, 1, 5);
+		
+		segmentExcerpt.getItem(id, schemaKey);
+		
 		
 	}
 }

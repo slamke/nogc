@@ -46,12 +46,12 @@ public class Segment {
 //	/**
 //	 * byteBuffer的起始地址 
 //	 */
-//	private long startAddress;
+	private long startAddress;
 	
 	public Segment(){
 		super();
 		this.byteBuffer = MemoryTool.allocate(DEFAULT_CAPACITY);
-		//startAddress = ((DirectBuffer) byteBuffer).address();
+		startAddress = ((DirectBuffer) byteBuffer).address();
 		readonly = true;
 		//this.noGcData = new NoGcByteBuffer(Buffer.CAPACITY, DEFAULT_CAPACITY, (DirectBuffer)byteBuffer);
 	}
@@ -59,7 +59,7 @@ public class Segment {
 	public Segment(DirectBuffer directBuffer){
 		super();
 		this.byteBuffer = directBuffer;
-		//startAddress = ((DirectBuffer) byteBuffer).address();
+		startAddress = ((DirectBuffer) byteBuffer).address();
 		readonly = true;
 		//this.noGcData = new NoGcByteBuffer(Buffer.CAPACITY, DEFAULT_CAPACITY, (DirectBuffer)byteBuffer);
 	}
@@ -71,10 +71,11 @@ public class Segment {
 		// TODO Auto-generated constructor stub
 		super();
 		this.byteBuffer = MemoryTool.allocate(capacity);
-		//startAddress = ((DirectBuffer) byteBuffer).address();
+		startAddress = ((DirectBuffer) byteBuffer).address();
 		readonly = true;
 		//this.noGcData = new NoGcByteBuffer(Buffer.CAPACITY, capacity, (DirectBuffer)byteBuffer);
 	}
+
 
 	public void release(){
 		MemoryTool.free((ByteBuffer) this.byteBuffer);
